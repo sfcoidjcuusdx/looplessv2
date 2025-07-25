@@ -15,7 +15,6 @@
 
 import SwiftUI
 
-// Reusable view model types
 struct Achievement: Identifiable {
     let id: String
     let title: String
@@ -26,7 +25,6 @@ struct Achievement: Identifiable {
     let progressDescription: (Double, Double) -> String
 }
 
-// Reusable card for goal settings
 struct GoalSettingCard: View {
     let title: String
     @Binding var value: Int
@@ -52,7 +50,6 @@ struct GoalSettingCard: View {
     }
 }
 
-// Reusable card for showing achievements
 struct AchievementCard: View {
     let achievement: Achievement
     let currentProgress: Double
