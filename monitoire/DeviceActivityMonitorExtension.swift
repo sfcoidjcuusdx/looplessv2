@@ -19,10 +19,8 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         store.shield.applications = nil
         print("🔄 intervalDidStart: Reset shields for \(activity.rawValue)")
 
-        // ✅ Reapply any previously blocked apps
         reapplyPersistedBlockedTokens()
 
-        // ⏳ Then clear the stored blocked tokens after shields are restored
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             UserDefaults(suiteName: "group.crew.LooplessFinal.sharedData")?.removeObject(forKey: self.blockedTokensKey)
             print("🗑️ Cleared persisted blocked tokens after restoring shields")
@@ -33,14 +31,12 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     override func eventDidReachThreshold(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
         print("🚨 Threshold reached for event: \(event.rawValue)")
         
-        // Get all app limits
         guard let data = UserDefaults(suiteName: "group.crew.LooplessFinal.sharedData")?.data(forKey: appLimitKey),
               let limits = try? PropertyListDecoder().decode([AppTimeLimit].self, from: data) else {
             print("⚠️ Failed to load app limits")
             return
         }
         
-        // Find matching limit by checking if event name contains the limit ID
         for limit in limits {
             if event.rawValue.contains(limit.id.uuidString), let token = limit.token {
                 store.shield.applications = [token]
