@@ -35,19 +35,15 @@ struct AppLimitListInlineView: View {
         do {
             let encoded = try PropertyListEncoder().encode(token)
 
-            // 1. Remove from app limits
             dataModel.appLimits.removeAll { $0.tokenData == encoded }
 
-            // 2. Remove from time limit selection
             dataModel.timeLimitSelection.applicationTokens.remove(token)
 
-            // 3. Remove the shield from ManagedSettingsStore
             let store = ManagedSettingsStore(named: ManagedSettingsStore.Name("group.crew.LooplessFinal.sharedData"))
             var current = store.shield.applications ?? Set()
             current.remove(token)
             store.shield.applications = current.isEmpty ? nil : current
 
-            // 4. Remove the limit hit timestamp
             let timestampsKey = "LimitHitTimestamps"
             let tokenID = encoded.base64EncodedString()
             if var dict = UserDefaults(suiteName: "group.crew.LooplessFinal.sharedData")?.dictionary(forKey: timestampsKey) as? [String: Date] {
@@ -56,11 +52,9 @@ struct AppLimitListInlineView: View {
                 print("🗑️ Removed timestamp for \(tokenID.prefix(8))")
             }
 
-            // 5. Save changes
             dataModel.saveAppLimits()
             dataModel.saveTimeLimitSelection()
 
-            // 6. Restart monitoring
             dataModel.startMonitoringLimits()
 
             print("✅ Time limit for app removed successfully.")
