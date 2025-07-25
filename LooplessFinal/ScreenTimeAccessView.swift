@@ -9,58 +9,50 @@ struct ScreenTimeAccessView: View {
     @State private var deniedAlert = false
 
     var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
-
-            VStack(spacing: 32) {
+        NavigationStack {
+            VStack(spacing: 24) {
                 Spacer()
 
-                Image(systemName: "eye") // Subtler than hand.raised
+                Image(systemName: "eye")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 60, height: 60)
-                    .foregroundColor(.mint.opacity(0.85))
+                    .foregroundColor(.accentColor)
 
-                GradientText("Screen Time Permission")
-                    .font(.title3.bold())
+                Text("Screen Time Permission")
+                    .font(.title2)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
 
                 Text("We need permission to monitor your screen time and help you stay focused.")
-                    .font(.body.weight(.medium))
-                    .foregroundColor(.white.opacity(0.85))
+                    .font(.body)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 24)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal)
 
                 Button(action: {
                     Haptics.shared.tap()
                     requestAuthorization()
                 }) {
                     Text("Grant Access")
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(
-                            LinearGradient(colors: [.mint.opacity(0.9), .cyan.opacity(0.8)],
-                                           startPoint: .topLeading,
-                                           endPoint: .bottomTrailing)
-                        )
-                        .foregroundColor(.black)
-                        .cornerRadius(12)
+                        .background(Color.accentColor)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
                 }
                 .padding(.horizontal)
 
                 Spacer()
             }
-            .padding(.top, 40)
-            .padding(.bottom, 30)
+            .padding()
+            .background(Color(.systemBackground))
+            .alert("Access Denied", isPresented: $deniedAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("Screen Time access is required to continue.")
+            }
         }
-        .alert("Access Denied", isPresented: $deniedAlert) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("Screen Time access is required to continue.")
-        }
-        .preferredColorScheme(.dark)
     }
 
     private func requestAuthorization() {

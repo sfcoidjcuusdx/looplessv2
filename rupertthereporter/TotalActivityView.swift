@@ -4,10 +4,10 @@ struct TotalActivityView: View {
     let totalActivity: String
 
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 8) {
             Text("Today's Screen Time")
-                .font(.custom("AvenirNext-Medium", size: 18))
-                .foregroundColor(.white.opacity(0.85))
+                .font(.headline)
+                .foregroundColor(.primary)
 
             HStack(spacing: 12) {
                 if let (val, unit) = extract(component: "h") {
@@ -21,18 +21,14 @@ struct TotalActivityView: View {
                 }
             }
         }
-        .padding(.vertical, 10)
-        .padding(.horizontal, 16)
+        .padding(.vertical, 16)
+        .padding(.horizontal, 20)
         .frame(maxWidth: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 18)
-                .fill(Color.white.opacity(0.02))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 18)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                )
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.white)
+                .shadow(color: .black.opacity(0.08), radius: 6, x: 0, y: 4)
         )
-        .shadow(color: .black.opacity(0.15), radius: 4, x: 0, y: 2)
         .padding(.horizontal)
         .padding(.bottom, 8)
     }
@@ -46,12 +42,12 @@ struct TotalActivityView: View {
     private func activitySegment(value: String, unit: String) -> some View {
         HStack(alignment: .lastTextBaseline, spacing: 2) {
             Text(value)
-                .font(.system(size: 44, weight: .semibold, design: .rounded))
-                .foregroundColor(.white)
+                .font(.system(size: 36, weight: .semibold, design: .rounded))
+                .foregroundColor(.primary)
 
             Text(unit)
-                .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundColor(.gray.opacity(0.7))
+                .font(.body)
+                .foregroundColor(.secondary)
         }
     }
 }

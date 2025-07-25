@@ -1,18 +1,3 @@
-//
-//  LoopBreakingQuizView.swift
-//  LooplessFinal
-//
-//  Created by rafiq kutty on 7/8/25.
-//
-
-
-//
-//  LoopBreakingQuizView.swift
-//  loopless
-//
-//  Created by rafiq kutty on 6/28/25.
-//
-
 import SwiftUI
 
 struct LoopBreakingQuizView: View {
@@ -49,68 +34,72 @@ struct LoopBreakingQuizView: View {
     ]
 
     var body: some View {
-        VStack(spacing: 24) {
-            Text("🧠 Loop Breaking Quiz")
-                .font(.custom("AvenirNext-Bold", size: 22))
-                .foregroundStyle(
-                    LinearGradient(colors: [.purple, .blue], startPoint: .leading, endPoint: .trailing)
-                )
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                Text("Loop Breaking Quiz")
+                    .font(.title)
+                    .fontWeight(.semibold)
+                    .padding(.top)
 
-            VStack(alignment: .leading, spacing: 16) {
-                Text(questions[currentQuestion].text)
-                    .font(.headline)
-                    .foregroundColor(.white)
+                VStack(alignment: .leading, spacing: 16) {
+                    Text(questions[currentQuestion].text)
+                        .font(.headline)
 
-                ForEach(questions[currentQuestion].options, id: \.self) { option in
-                    Button(action: {
-                        selectedOption = option
-                        showExplanation = true
-                    }) {
-                        Text(option)
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(selectedOption == option ? Color.blue.opacity(0.7) : Color.white.opacity(0.1))
-                            .cornerRadius(12)
-                            .foregroundColor(.white)
-                            .font(.subheadline)
-                    }
-                }
-
-                if showExplanation, let selected = selectedOption {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(selected == questions[currentQuestion].correctAnswer ? "✅ Correct!" : "❌ Incorrect")
-                            .font(.headline)
-                            .foregroundColor(.white)
-
-                        Text(questions[currentQuestion].explanation)
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.8))
-
-                        if currentQuestion + 1 < questions.count {
-                            Button("Next") {
-                                currentQuestion += 1
-                                showExplanation = false
-                                selectedOption = nil
+                    ForEach(questions[currentQuestion].options, id: \.self) { option in
+                        Button(action: {
+                            selectedOption = option
+                            showExplanation = true
+                        }) {
+                            HStack {
+                                Text(option)
+                                Spacer()
+                                if showExplanation && selectedOption == option {
+                                    Image(systemName: option == questions[currentQuestion].correctAnswer ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                        .foregroundColor(option == questions[currentQuestion].correctAnswer ? .green : .red)
+                                }
                             }
-                            .padding(.top)
-                        } else {
-                            Text("🎉 You've completed the quiz!")
-                                .font(.headline)
-                                .foregroundColor(.green)
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(8)
+                        }
+                        .disabled(showExplanation)
+                    }
+
+                    if showExplanation, let selected = selectedOption {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(selected == questions[currentQuestion].correctAnswer ? "Correct" : "Incorrect")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(selected == questions[currentQuestion].correctAnswer ? .green : .red)
+
+                            Text(questions[currentQuestion].explanation)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+
+                            if currentQuestion + 1 < questions.count {
+                                Button("Next") {
+                                    currentQuestion += 1
+                                    showExplanation = false
+                                    selectedOption = nil
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.large)
                                 .padding(.top)
+                            } else {
+                                Text("You've completed the quiz.")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.accentColor)
+                                    .padding(.top)
+                            }
                         }
                     }
                 }
             }
             .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(LinearGradient(colors: [Color.black, Color.indigo.opacity(0.7)], startPoint: .top, endPoint: .bottom))
-                    .shadow(radius: 10)
-            )
         }
-        .padding()
-        .background(Color.black.ignoresSafeArea())
+        .navigationTitle("Quiz")
+        .background(Color(.systemBackground))
     }
 }
 

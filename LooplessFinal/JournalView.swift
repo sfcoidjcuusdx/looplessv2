@@ -10,69 +10,49 @@ struct JournalView: View {
     @State private var journalText: String = ""
     @State private var entries: [JournalEntry] = []
 
-    private let fileURL: URL = {
+    private var fileURL: URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("journal_entries.json")
-    }()
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             Text("My Journal")
-                .font(.custom("Avenir Next", size: 32).weight(.bold))
-                .foregroundColor(.white)
+                .font(.largeTitle)
+                .fontWeight(.bold)
                 .padding(.top)
 
-            TextEditor(text: $journalText)
-                .padding()
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.white.opacity(0.05))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color.purple.opacity(0.4), lineWidth: 1)
-                        )
-                )
-                .frame(height: 180)
-                .foregroundColor(.white)
-                .font(.custom("Avenir Next", size: 16))
+            CustomTextEditor(text: $journalText)
+                .frame(height: 160)
 
             Button("Save Entry") {
                 saveEntry()
             }
-            .font(.custom("Avenir Next", size: 18).weight(.semibold))
-            .padding()
-            .frame(maxWidth: .infinity)
-            .background(LinearGradient(colors: [.purple, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
-            .foregroundColor(.white)
-            .cornerRadius(16)
+            .buttonStyle(.borderedProminent)
 
             if entries.isEmpty {
                 Text("No entries yet.")
-                    .foregroundColor(.white.opacity(0.6))
-                    .font(.custom("Avenir Next", size: 14))
+                    .foregroundColor(.secondary)
+                    .font(.footnote)
             } else {
                 ScrollView {
-                    VStack(spacing: 16) {
+                    VStack(spacing: 12) {
                         ForEach(entries.reversed()) { entry in
-                            VStack(alignment: .leading, spacing: 8) {
+                            VStack(alignment: .leading, spacing: 6) {
                                 Text(formattedDate(entry.date))
-                                    .font(.custom("Avenir Next", size: 12))
-                                    .foregroundColor(.white.opacity(0.6))
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
 
                                 Text(entry.text)
-                                    .font(.custom("Avenir Next", size: 16))
-                                    .foregroundColor(.white)
+                                    .font(.body)
+                                    .foregroundColor(.primary)
                                     .multilineTextAlignment(.leading)
                             }
                             .padding()
                             .background(
-                                LinearGradient(
-                                    colors: [.purple.opacity(0.2), .blue.opacity(0.2)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color(.secondarySystemGroupedBackground))
                             )
-                            .cornerRadius(16)
                         }
                     }
                 }
@@ -81,7 +61,7 @@ struct JournalView: View {
             Spacer()
         }
         .padding()
-        .background(Color.black.ignoresSafeArea())
+        .background(Color(.systemGroupedBackground))
         .onAppear {
             loadEntries()
         }
@@ -97,17 +77,19 @@ struct JournalView: View {
 
         do {
             let data = try JSONEncoder().encode(entries)
-            try data.write(to: fileURL)
+            try data.write(to: fileURL, options: [.atomic])
         } catch {
-            print("Failed to save journal entry:", error)
+            print("❌ Failed to save journal entry:", error.localizedDescription)
         }
     }
 
     private func loadEntries() {
         do {
             let data = try Data(contentsOf: fileURL)
-            entries = try JSONDecoder().decode([JournalEntry].self, from: data)
+            let decoded = try JSONDecoder().decode([JournalEntry].self, from: data)
+            entries = decoded
         } catch {
+            print("ℹ️ No journal file yet or failed to decode: \(error.localizedDescription)")
             entries = []
         }
     }
@@ -117,6 +99,55 @@ struct JournalView: View {
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
         return formatter.string(from: date)
+    }
+}
+
+// MARK: - CustomTextEditor (Embedded in same file)
+
+struct CustomTextEditor: UIViewRepresentable {
+    @Binding var text: String
+
+    class Coordinator: NSObject, UITextViewDelegate {
+        var parent: CustomTextEditor
+
+        init(_ parent: CustomTextEditor) {
+            self.parent = parent
+        }
+
+        func textViewDidChange(_ textView: UITextView) {
+            parent.text = textView.text
+        }
+
+        func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText string: String) -> Bool {
+            if string == "\n" {
+                textView.resignFirstResponder() // Dismiss keyboard on return
+                return false
+            }
+            return true
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+
+    func makeUIView(context: Context) -> UITextView {
+        let textView = UITextView()
+        textView.delegate = context.coordinator
+        textView.font = UIFont.preferredFont(forTextStyle: .body)
+        textView.backgroundColor = UIColor.systemBackground
+        textView.layer.cornerRadius = 12
+        textView.layer.borderWidth = 1
+        textView.layer.borderColor = UIColor.gray.withAlphaComponent(0.4).cgColor
+        textView.textContainerInset = UIEdgeInsets(top: 8, left: 6, bottom: 8, right: 6)
+        textView.returnKeyType = .done
+        return textView
+    }
+
+    func updateUIView(_ uiView: UITextView, context: Context) {
+        if uiView.text != text {
+            uiView.text = text
+        }
     }
 }
 

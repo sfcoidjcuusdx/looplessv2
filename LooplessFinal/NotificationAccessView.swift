@@ -1,11 +1,3 @@
-//
-//  NotificationAccessView.swift
-//  LooplessFinal
-//
-//  Created by rafiq kutty on 7/15/25.
-//
-
-
 import SwiftUI
 import UserNotifications
 
@@ -15,68 +7,54 @@ struct NotificationAccessView: View {
     @State private var isRequesting = false
 
     var body: some View {
-        ZStack {
-            // Gradient background
-            LinearGradient(
-                gradient: Gradient(colors: [.black, .gray.opacity(0.2)]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-
-            VStack(spacing: 30) {
+        NavigationStack {
+            VStack(spacing: 24) {
                 Spacer()
 
-                // Icon
+                // System icon with standard accent color
                 Image(systemName: "bell.badge.fill")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 100, height: 100)
-                    .foregroundStyle(
-                        LinearGradient(colors: [.orange, .pink], startPoint: .top, endPoint: .bottom)
-                    )
-                    .shadow(radius: 10)
+                    .frame(width: 80, height: 80)
+                    .foregroundColor(.accentColor)
 
                 // Title
                 Text("Enable Notifications")
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundStyle(
-                        LinearGradient(colors: [.orange, .pink], startPoint: .leading, endPoint: .trailing)
-                    )
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .multilineTextAlignment(.center)
 
                 // Explanation
-                Text("Loopless uses gentle reminders to help you reflect on your screen time and stay focused on your goals. Notifications are a key part of your recovery journey.")
+                Text("Loopless uses gentle reminders to help you reflect on your screen time and stay focused on your goals.")
                     .font(.body)
+                    .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
-                    .foregroundColor(.white.opacity(0.8))
                     .padding(.horizontal)
 
                 // Request Button
                 Button(action: requestNotificationPermission) {
                     Text(isRequesting ? "Requesting..." : "Enable Notifications")
-                        .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(
-                            LinearGradient(colors: [.orange, .pink], startPoint: .leading, endPoint: .trailing)
-                        )
+                        .background(Color.accentColor)
                         .foregroundColor(.white)
-                        .cornerRadius(14)
-                        .shadow(color: .orange.opacity(0.4), radius: 10, x: 0, y: 5)
-                        .padding(.horizontal)
+                        .cornerRadius(10)
                 }
+                .padding(.horizontal)
                 .disabled(isRequesting)
 
                 Spacer()
             }
             .padding()
+            .background(Color(.systemBackground))
+            .navigationTitle("Notifications")
+            .navigationBarTitleDisplayMode(.inline)
+            .alert("Notifications Denied", isPresented: $deniedAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("Notifications are recommended to help you reflect and stay on track.")
+            }
         }
-        .alert("Notifications Denied", isPresented: $deniedAlert) {
-            Button("OK") {}
-        } message: {
-            Text("Notifications are recommended to help you reflect and stay on track.")
-        }
-        .preferredColorScheme(.dark)
     }
 
     private func requestNotificationPermission() {
@@ -86,7 +64,7 @@ struct NotificationAccessView: View {
                 isRequesting = false
                 if granted {
                     onAuthorized()
-                    scheduleSampleReflectionNotification() // Optional test notification
+                    scheduleSampleReflectionNotification()
                 } else {
                     deniedAlert = true
                 }
@@ -106,3 +84,4 @@ struct NotificationAccessView: View {
         UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
     }
 }
+

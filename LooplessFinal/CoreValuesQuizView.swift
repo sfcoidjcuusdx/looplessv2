@@ -1,18 +1,3 @@
-//
-//  CoreValuesQuizView.swift
-//  LooplessFinal
-//
-//  Created by rafiq kutty on 7/8/25.
-//
-
-
-//
-//  CoreValuesQuizView.swift
-//  loopless
-//
-//  Created by rafiq kutty on 6/28/25.
-//
-
 import SwiftUI
 
 struct CoreValuesQuizView: View {
@@ -50,88 +35,85 @@ struct CoreValuesQuizView: View {
     ]
 
     var body: some View {
-        VStack(spacing: 24) {
-            Text("💡 Core Values Quiz")
-                .font(.custom("AvenirNext-Bold", size: 22))
-                .foregroundStyle(
-                    LinearGradient(colors: [.mint, .blue], startPoint: .leading, endPoint: .trailing)
-                )
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                Text("Core Values Quiz")
+                    .font(.title)
+                    .fontWeight(.semibold)
+                    .padding(.top)
 
-            if quizComplete {
-                VStack(spacing: 12) {
-                    Text("🎉 You've completed the quiz!")
-                        .font(.title2)
-                        .foregroundColor(.white)
+                if quizComplete {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("You've completed the quiz.")
+                            .font(.title2)
 
-                    Button("Restart Quiz") {
-                        currentQuestion = 0
-                        selectedOption = nil
-                        showExplanation = false
-                        quizComplete = false
-                    }
-                    .padding()
-                    .background(Color.white)
-                    .foregroundColor(.mint)
-                    .clipShape(Capsule())
-                }
-            } else {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text(questions[currentQuestion].text)
-                        .font(.headline)
-                        .foregroundColor(.white)
-
-                    ForEach(questions[currentQuestion].options, id: \.self) { option in
-                        Button(action: {
-                            selectedOption = option
-                            showExplanation = true
-                        }) {
-                            Text(option)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(selectedOption == option ? Color.green.opacity(0.6) : Color.white.opacity(0.1))
-                                .cornerRadius(12)
-                                .foregroundColor(.white)
-                                .font(.subheadline)
+                        Button("Restart Quiz") {
+                            currentQuestion = 0
+                            selectedOption = nil
+                            showExplanation = false
+                            quizComplete = false
                         }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+                        .padding(.top)
                     }
+                } else {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text(questions[currentQuestion].text)
+                            .font(.headline)
 
-                    if showExplanation, let selected = selectedOption {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(selected == questions[currentQuestion].correctAnswer ? "✅ Correct!" : "❌ Incorrect")
-                                .font(.headline)
-                                .foregroundColor(.white)
-
-                            Text(questions[currentQuestion].explanation)
-                                .font(.caption)
-                                .foregroundColor(.white.opacity(0.8))
-
-                            Button("Next") {
-                                if currentQuestion + 1 < questions.count {
-                                    currentQuestion += 1
-                                    showExplanation = false
-                                    selectedOption = nil
-                                } else {
-                                    quizComplete = true
+                        ForEach(questions[currentQuestion].options, id: \.self) { option in
+                            Button(action: {
+                                selectedOption = option
+                                showExplanation = true
+                            }) {
+                                HStack {
+                                    Text(option)
+                                    Spacer()
+                                    if showExplanation && selectedOption == option {
+                                        Image(systemName: option == questions[currentQuestion].correctAnswer ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                            .foregroundColor(option == questions[currentQuestion].correctAnswer ? .green : .red)
+                                    }
                                 }
+                                .padding()
+                                .background(Color(.systemGray6))
+                                .cornerRadius(8)
                             }
-                            .padding(.top)
+                            .disabled(showExplanation)
+                        }
+
+                        if showExplanation, let selected = selectedOption {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text(selected == questions[currentQuestion].correctAnswer ? "Correct" : "Incorrect")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(selected == questions[currentQuestion].correctAnswer ? .green : .red)
+
+                                Text(questions[currentQuestion].explanation)
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+
+                                Button("Next") {
+                                    if currentQuestion + 1 < questions.count {
+                                        currentQuestion += 1
+                                        showExplanation = false
+                                        selectedOption = nil
+                                    } else {
+                                        quizComplete = true
+                                    }
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.large)
+                                .padding(.top)
+                            }
                         }
                     }
                 }
-                .padding()
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(
-                            LinearGradient(colors: [Color.black, Color.green.opacity(0.6)],
-                                           startPoint: .top,
-                                           endPoint: .bottom)
-                        )
-                        .shadow(radius: 10)
-                )
             }
+            .padding()
         }
-        .padding()
-        .background(Color.black.ignoresSafeArea())
+        .navigationTitle("Quiz")
+        .background(Color(.systemBackground))
     }
 }
 

@@ -35,6 +35,8 @@ class LooplessDataModel: ObservableObject {
     @Published var sessionManager: BlockingSessionManager? = nil
     @Published var cancelledEvents: Set<String> = []
     private var lastActiveSessionKeys: Set<String> = []
+    @Published var appLimits: [AppTimeLimit] = []
+    @Published var timeLimitSelection = FamilyActivitySelection()
 
 
 
@@ -45,23 +47,236 @@ class LooplessDataModel: ObservableObject {
     private let labelKey = "BlockedAppLabels"
     private let cancelledEventsKey = "CancelledBlockingEvents"
 
-    private let store = ManagedSettingsStore()
+    private let timeLimitStore = ManagedSettingsStore(named: ManagedSettingsStore.Name("group.crew.LooplessFinal.sharedData"))
+    private let presetStore = ManagedSettingsStore(named: ManagedSettingsStore.Name("LooplessPresetShielding"))
+
 
     init() {
+        loadAppLimits()                  // ✅ Moved to top
         loadSavedLabels()
         loadSelection()
+        loadTimeLimitSelection()
         loadCancelledEvents()
-        evaluateBlocking()
-        startBlockingTimer()
-    }
-
-    // MARK: - Blocking Evaluation Timer
-
-    private func startBlockingTimer() {
-        Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
-            self?.evaluateBlocking()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.evaluateBlocking()
+            self.scheduleTodayBlockingEvents()
         }
     }
+
+
+    // MARK: - Blocking Evaluation Timer
+    func startMonitoringLimits() {
+        let center = DeviceActivityCenter()
+
+        let schedule = DeviceActivitySchedule(
+            intervalStart: DateComponents(hour: 0, minute: 0),
+            intervalEnd: DateComponents(hour: 23, minute: 59),
+            repeats: true
+        )
+
+        var events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
+
+        print("📝 Starting to prepare \(appLimits.count) app limits for monitoring...")
+
+        for limit in appLimits {
+            guard let token = limit.token else {
+                print("❌ Failed to decode token for app limit with ID: \(limit.id)")
+                continue
+            }
+
+            let eventName = DeviceActivityEvent.Name("limit-\(limit.id.uuidString)")
+            let threshold = DateComponents(minute: limit.dailyLimitMinutes)
+
+            print("🔧 Configuring limit: \(limit.dailyLimitMinutes) mins for token: \(token)")
+            print("📛 Event name: \(eventName.rawValue)")
+
+            events[eventName] = DeviceActivityEvent(
+                applications: Set([token]),
+                threshold: threshold
+            )
+        }
+
+        if events.isEmpty {
+            print("⚠️ No valid events to monitor — did all token decodings fail?")
+            return
+        }
+
+        do {
+            try center.startMonitoring(
+                DeviceActivityName("DailyAppLimits"),
+                during: schedule,
+                events: events
+            )
+            print("📈 Monitoring started with \(events.count) events")
+        } catch {
+            print("❌ Monitoring failed: \(error)")
+        }
+    }
+
+    
+    private let timeLimitSelectionKey = "SavedTimeLimitSelection"
+
+    func saveTimeLimitSelection() {
+        do {
+            let data = try PropertyListEncoder().encode(timeLimitSelection)
+            UserDefaults.standard.set(data, forKey: timeLimitSelectionKey)
+            print("✅ Saved TimeLimit FamilyActivitySelection")
+        } catch {
+            print("❌ Failed to save TimeLimit selection: \(error)")
+        }
+    }
+
+    func loadTimeLimitSelection() {
+        guard let data = UserDefaults.standard.data(forKey: timeLimitSelectionKey) else {
+            print("ℹ️ No saved time limit selection found")
+            return
+        }
+
+        do {
+            let restored = try PropertyListDecoder().decode(FamilyActivitySelection.self, from: data)
+            DispatchQueue.main.async {
+                self.timeLimitSelection = restored
+                print("✅ Loaded saved TimeLimit FamilyActivitySelection")
+                for token in restored.applicationTokens {
+                    print("📱 Selected token: \(token)")
+                }
+            }
+        } catch {
+            print("❌ Failed to decode TimeLimit FamilyActivitySelection: \(error)")
+        }
+    }
+
+
+    func reapplyTimeLimitShieldsIfNeeded() {
+        let timestampsKey = "LimitHitTimestamps"
+        let now = Date()
+        let calendar = Calendar.current
+
+        guard let timestampDict = UserDefaults(suiteName: "group.crew.LooplessFinal.sharedData")?.dictionary(forKey: timestampsKey) as? [String: Date] else {
+            print("ℹ️ No limit hit timestamps found")
+            return
+        }
+
+        let tokensToBlock: [ApplicationToken] = appLimits.compactMap { limit in
+            guard let token = limit.token,
+                  let encoded = try? PropertyListEncoder().encode(token) else {
+                return nil
+            }
+
+            let id = encoded.base64EncodedString()
+
+            if let hitDate = timestampDict[id], calendar.isDate(hitDate, inSameDayAs: now) {
+                return token
+            }
+
+            return nil
+        }
+
+        if !tokensToBlock.isEmpty {
+            timeLimitStore.shield.applications = Set(tokensToBlock)
+            print("🛡️ Reapplied shields for \(tokensToBlock.count) app(s) that hit their limits today")
+        } else {
+            timeLimitStore.shield.applications = nil
+            print("🔓 No apps currently blocked by time limits")
+        }
+    }
+
+
+
+
+  //  func refreshMonitoringForTimeLimits() {
+  //      print("🔄 App returned to foreground — refreshing time limit monitoring")
+  //      startMonitoringLimits()
+   // }
+
+    // MARK: - App Limits Persistence
+
+    func saveAppLimits() {
+        do {
+            let data = try PropertyListEncoder().encode(appLimits)
+            UserDefaults(suiteName: "group.crew.LooplessFinal.sharedData")?.set(data, forKey: "SavedAppLimits")
+            print("✅ App limits saved")
+        } catch {
+            print("❌ Failed to save app limits: \(error)")
+        }
+    }
+
+    func loadAppLimits() {
+        guard let data = UserDefaults(suiteName: "group.crew.LooplessFinal.sharedData")?.data(forKey: "SavedAppLimits") else {
+            print("ℹ️ No app limits found")
+            return
+        }
+
+        print("📦 Raw SavedAppLimits size: \(data.count) bytes")
+
+        do {
+            let limits = try PropertyListDecoder().decode([AppTimeLimit].self, from: data)
+            DispatchQueue.main.async {
+                self.appLimits = limits
+                print("✅ Loaded \(limits.count) app limits")
+                for limit in limits {
+                    print("🧠 Limit ID: \(limit.id), Minutes: \(limit.dailyLimitMinutes)")
+                    if let token = limit.token {
+                        print("🎯 Token decoded: \(token)")
+                    } else {
+                        print("❌ Token decoding failed for limit \(limit.id)")
+                    }
+                }
+                self.startMonitoringLimits()
+            }
+        } catch {
+            print("❌ Failed to load app limits: \(error)")
+        }
+    }
+
+
+
+
+    func scheduleTodayBlockingEvents() {
+        let calendar = Calendar.current
+        let now = Date()
+        let today = calendar.weekdaySymbols[calendar.component(.weekday, from: now) - 1]
+
+        guard let todaysEvents = scheduleViewModel.blockingSchedule[today], !todaysEvents.isEmpty else {
+            print("🟢 No blocking events to schedule today")
+            return
+        }
+
+        for event in todaysEvents {
+            var startComponents = event.start
+            var endComponents = event.end
+
+            startComponents.year = calendar.component(.year, from: now)
+            startComponents.month = calendar.component(.month, from: now)
+            startComponents.day = calendar.component(.day, from: now)
+
+            endComponents.year = calendar.component(.year, from: now)
+            endComponents.month = calendar.component(.month, from: now)
+            endComponents.day = calendar.component(.day, from: now)
+
+            guard let startDate = calendar.date(from: startComponents),
+                  let endDate = calendar.date(from: endComponents),
+                  endDate > now else {
+                continue
+            }
+
+            let key = eventKey(name: event.name, start: startDate)
+            if cancelledEvents.contains(key) { continue }
+
+            if now >= startDate && now <= endDate {
+                print("🚨 Already in active blocking window: \(event.name)")
+                startScheduledBlocking(start: startDate, end: endDate)
+            } else {
+                let timeUntilStart = startDate.timeIntervalSinceNow
+                Timer.scheduledTimer(withTimeInterval: timeUntilStart, repeats: false) { [weak self] _ in
+                    print("🔒 Starting blocking session: \(event.name)")
+                    self?.startScheduledBlocking(start: startDate, end: endDate)
+                }
+            }
+        }
+    }
+
 
     func evaluateBlocking() {
         let calendar = Calendar.current
@@ -89,7 +304,7 @@ class LooplessDataModel: ObservableObject {
 
         // Continue evaluating whether we need to block right now
         guard let todaysEvents = scheduleViewModel.blockingSchedule[today], !todaysEvents.isEmpty else {
-            store.shield.applications = nil
+            presetStore.shield.applications = nil
             print("🟢 No blocking events for today (\(today))")
             return
         }
@@ -126,17 +341,17 @@ class LooplessDataModel: ObservableObject {
             }
 
             if !tokens.isEmpty {
-                store.shield.applications = tokens
+                presetStore.shield.applications = tokens
                 print("🛡️ Blocking \(tokens.count) apps")
             } else {
-                store.shield.applications = nil
+                presetStore.shield.applications = nil
                 print("⚠️ No apps to block for '\(event.name)'")
             }
 
             return // keep this, but now it won't prevent auto-end logic
         }
 
-        store.shield.applications = nil
+        presetStore.shield.applications = nil
         print("🟢 No active blocking right now")
     }
 
@@ -151,8 +366,15 @@ class LooplessDataModel: ObservableObject {
             return false
         }
 
-        return now >= startDate && now <= endDate
+        if startDate <= endDate {
+            // Normal case: 10 AM to 6 PM
+            return now >= startDate && now <= endDate
+        } else {
+            // Overnight case: 10 PM to 6 AM
+            return now >= startDate || now <= endDate
+        }
     }
+
 
     // MARK: - Cancel Event
 
@@ -160,8 +382,23 @@ class LooplessDataModel: ObservableObject {
         let key = eventKey(name: name, start: start)
         cancelledEvents.insert(key)
         saveCancelledEvents()
-        clearBlocking()
+
+        // Remove from schedule
+        scheduleViewModel.removeEvent(named: name, on: start)
+
+        // Remove session if exists
+        sessionManager?.removeSession(name: name, startTime: start)
+
+        // Clear blocking immediately and prevent re-evaluation
+        let store = ManagedSettingsStore()
+        store.shield.applications = nil
+        unblockTimer?.invalidate()
+        unblockTimer = nil
+        blockEnd = nil
+        
+        print("🚫 Cancelled event '\(name)' at \(start) - blocking immediately stopped")
     }
+
 
     private func eventKey(name: String, start: Date) -> String {
         let formatter = DateFormatter()
@@ -183,11 +420,27 @@ class LooplessDataModel: ObservableObject {
     // MARK: - Manual Scheduled Blocking
 
     func startScheduledBlocking(start: Date, end: Date) {
-        store.shield.applications = selection.applicationTokens
-        print("🔒 Blocking apps from \(start) to \(end)")
+        if let sessionManager = sessionManager {
+            let sessionKey = eventKey(name: "", start: start)
+            
+            if let activeSession = sessionManager.sessions.first(where: {
+                Calendar.current.isDate($0.startTime, equalTo: start, toGranularity: .minute)
+            }), let tokens = activeSession.selection?.applicationTokens {
+                presetStore.shield.applications = tokens
+                print("🔒 Blocking apps from \(start) to \(end) using session: \(activeSession.name)")
+            } else {
+                presetStore.shield.applications = selection.applicationTokens
+                print("🔒 Blocking apps from \(start) to \(end) using fallback selection")
+            }
+        } else {
+            presetStore.shield.applications = selection.applicationTokens
+            print("🔒 Blocking apps from \(start) to \(end) — sessionManager was nil, using fallback")
+        }
+
         blockEnd = end
         scheduleUnblock(at: end)
     }
+
 
     private func scheduleUnblock(at date: Date) {
         unblockTimer?.invalidate()
@@ -198,7 +451,7 @@ class LooplessDataModel: ObservableObject {
     }
 
     private func unblockApps() {
-        store.shield.applications = nil
+        presetStore.shield.applications = nil
         print("✅ Auto-unblocked apps at \(Date())")
         unblockTimer = nil
         blockEnd = nil
@@ -208,6 +461,8 @@ class LooplessDataModel: ObservableObject {
         unblockTimer?.invalidate()
         unblockApps()
     }
+    
+   
 
     // MARK: - Screen Time Authorization
 
@@ -264,7 +519,7 @@ class LooplessDataModel: ObservableObject {
     }
 
     func applyAppShielding() {
-        store.shield.applications = selection.applicationTokens.isEmpty ? nil : selection.applicationTokens
+        presetStore.shield.applications = selection.applicationTokens.isEmpty ? nil : selection.applicationTokens
     }
 
     // MARK: - Labels

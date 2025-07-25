@@ -1,72 +1,66 @@
-//
-//  BreakingTheLoopView.swift
-//  LooplessFinal
-//
-//  Created by rafiq kutty on 7/8/25.
-//
-
-
-//
-//  BreakingTheLoopView.swift
-//  loopless
-//
-//  Created by rafiq kutty on 6/28/25.
-//
-
-
 import SwiftUI
 
 struct BreakingTheLoopView: View {
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
-                Text("Breaking the Loop: Response Rewiring")
-                    .font(.largeTitle.weight(.bold))
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(
-                        LinearGradient(colors: [.red, .pink], startPoint: .topLeading, endPoint: .bottomTrailing)
+            VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Breaking the Loop")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+
+                    Text("Now that you recognize loops, it’s time to rewrite your response pathways with intentional action.")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                }
+
+                HStack {
+                    Spacer()
+                    Image(systemName: "wand.and.stars.inverse")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 80, height: 80)
+                        .foregroundColor(.cyan)
+                        .shadow(radius: 4)
+                    Spacer()
+                }
+
+                VStack(alignment: .leading, spacing: 20) {
+                    SectionView(
+                        title: "The Interrupt",
+                        systemImage: "pause.circle",
+                        description: "Before reacting, insert a 5-second pause. Say: “Do I really want this?”"
                     )
 
-                Text("Now that you recognize loops, it’s time to rewrite your response pathways with intentional action.")
-                    .font(.body)
-                    .foregroundColor(.white.opacity(0.85))
-                    .padding(.horizontal)
+                    Divider()
 
-                Image(systemName: "wand.and.stars")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 160)
-                    .foregroundColor(.red)
+                    SectionView(
+                        title: "Replace with Routines",
+                        systemImage: "figure.walk.circle",
+                        description: "Create replacement behaviors: walk, stretch, breathwork. Make them accessible."
+                    )
 
-                VStack(alignment: .leading, spacing: 14) {
-                    Text("⛔️ The Interrupt")
-                        .font(.headline)
-                    Text("Before reacting, insert a 5-second pause. Say: ‘Do I really want this?’")
-                        .font(.subheadline)
+                    Divider()
 
-                    Text("🔄 Replace with Routines")
-                        .font(.headline)
-                    Text("Create replacement behaviors: walk, stretch, breathwork. Make them accessible.")
-                        .font(.subheadline)
-
-                    Text("📘 Reflect Regularly")
-                        .font(.headline)
-                    Text("What worked? What didn’t? Daily journaling increases loop-breaking success.")
-                        .font(.subheadline)
+                    SectionView(
+                        title: "Reflect Regularly",
+                        systemImage: "book.closed",
+                        description: "What worked? What didn’t? Daily journaling increases loop-breaking success."
+                    )
                 }
-                .padding()
-                .background(Color.white.opacity(0.04))
-                .clipShape(RoundedRectangle(cornerRadius: 14))
 
-                NavigationLink("Practice Response Quiz", destination: LoopBreakingQuizView())
-                    .font(.headline)
-                    .foregroundColor(.black)
-                    .padding()
-                    .background(Color.red.opacity(0.8))
-                    .clipShape(Capsule())
+                NavigationLink(destination: LoopBreakingQuizView()) {
+                    Label("Practice Response Quiz", systemImage: "checkmark.circle")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.cyan)
+                .controlSize(.large)
+                .padding(.top, 10)
             }
             .padding()
         }
-        .background(LinearGradient(colors: [Color.black, Color.red.opacity(0.3)], startPoint: .top, endPoint: .bottom).ignoresSafeArea())
+        .navigationTitle("Loop Rewiring")
+        .background(Color(.systemGroupedBackground))
     }
 }

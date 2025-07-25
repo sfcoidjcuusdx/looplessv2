@@ -1,19 +1,3 @@
-//
-//  ScreenAddictionQuizView.swift
-//  LooplessFinal
-//
-//  Created by rafiq kutty on 7/8/25.
-//
-
-
-//
-//  ScreenAddictionQuizView.swift
-//  loopless
-//
-//  Created by rafiq kutty on 6/28/25.
-//
-
-
 import SwiftUI
 
 struct ScreenAddictionQuizView: View {
@@ -58,95 +42,93 @@ struct ScreenAddictionQuizView: View {
     ]
 
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Screen Addiction Quiz")
-                .font(.title.bold())
-                .foregroundStyle(LinearGradient(colors: [.indigo, .purple], startPoint: .leading, endPoint: .trailing))
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                Text("Screen Addiction Quiz")
+                    .font(.title)
+                    .fontWeight(.semibold)
+                    .padding(.top)
 
-            if showResult {
-                VStack(spacing: 12) {
-                    Text("Your Score: \(score)/\(questions.count)")
-                        .font(.title2)
-                        .foregroundColor(.white)
-                    Text(score == questions.count ? "Excellent awareness!" : "Great effort—review the lessons to boost understanding.")
-                        .font(.body)
-                        .foregroundColor(.white.opacity(0.8))
-                    Button("Try Again") {
-                        currentQuestion = 0
-                        score = 0
-                        showResult = false
-                        selectedAnswer = nil
-                        showExplanation = false
-                    }
-                    .padding()
-                    .background(Color.purple)
-                    .clipShape(Capsule())
-                }
-            } else {
-                let q = questions[currentQuestion]
-                VStack(alignment: .leading, spacing: 16) {
-                    Text(q.text)
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.leading)
+                if showResult {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Your Score: \(score)/\(questions.count)")
+                            .font(.title2)
 
-                    ForEach(q.answers.indices, id: \.self) { i in
-                        Button(action: {
-                            if selectedAnswer == nil {
-                                selectedAnswer = i
-                                if i == q.correctIndex {
-                                    score += 1
-                                }
-                                showExplanation = true
-                            }
-                        }) {
-                            HStack {
-                                Text(q.answers[i])
-                                    .foregroundColor(.white)
-                                Spacer()
-                                if selectedAnswer != nil {
-                                    Image(systemName: i == q.correctIndex ? "checkmark.circle.fill" : (i == selectedAnswer ? "xmark.circle.fill" : "circle"))
-                                        .foregroundColor(i == q.correctIndex ? .green : (i == selectedAnswer ? .red : .gray))
-                                }
-                            }
-                            .padding()
-                            .background(Color.white.opacity(0.1))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        Text(score == questions.count ? "Excellent awareness!" : "Great effort—review the lessons to boost understanding.")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+
+                        Button("Try Again") {
+                            currentQuestion = 0
+                            score = 0
+                            showResult = false
+                            selectedAnswer = nil
+                            showExplanation = false
                         }
-                        .disabled(selectedAnswer != nil)
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+                        .padding(.top)
                     }
+                } else {
+                    let q = questions[currentQuestion]
 
-                    if showExplanation {
-                        Text(q.explanation)
-                            .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.9))
-                            .padding(.top, 6)
-                    }
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text(q.text)
+                            .font(.headline)
 
-                    if selectedAnswer != nil {
-                        Button(currentQuestion == questions.count - 1 ? "Finish" : "Next") {
-                            if currentQuestion < questions.count - 1 {
-                                currentQuestion += 1
-                                selectedAnswer = nil
-                                showExplanation = false
-                            } else {
-                                showResult = true
+                        ForEach(q.answers.indices, id: \.self) { i in
+                            Button(action: {
+                                if selectedAnswer == nil {
+                                    selectedAnswer = i
+                                    if i == q.correctIndex {
+                                        score += 1
+                                    }
+                                    showExplanation = true
+                                }
+                            }) {
+                                HStack {
+                                    Text(q.answers[i])
+                                    Spacer()
+                                    if selectedAnswer != nil {
+                                        Image(systemName: i == q.correctIndex ? "checkmark.circle.fill" : (i == selectedAnswer ? "xmark.circle.fill" : "circle"))
+                                            .foregroundColor(i == q.correctIndex ? .green : (i == selectedAnswer ? .red : .gray))
+                                    }
+                                }
+                                .padding(.vertical, 8)
+                                .padding(.horizontal)
+                                .background(Color(.systemGray6))
+                                .cornerRadius(8)
                             }
+                            .disabled(selectedAnswer != nil)
                         }
-                        .padding()
-                        .background(Color.indigo)
-                        .clipShape(Capsule())
+
+                        if showExplanation {
+                            Text(q.explanation)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+
+                        if selectedAnswer != nil {
+                            Button(currentQuestion == questions.count - 1 ? "Finish" : "Next") {
+                                if currentQuestion < questions.count - 1 {
+                                    currentQuestion += 1
+                                    selectedAnswer = nil
+                                    showExplanation = false
+                                } else {
+                                    showResult = true
+                                }
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.large)
+                            .padding(.top)
+                        }
                     }
                 }
-                .padding()
-                .background(Color.white.opacity(0.05))
-                .clipShape(RoundedRectangle(cornerRadius: 20))
             }
+            .padding()
         }
-        .padding()
-        .background(
-            LinearGradient(colors: [Color.black, Color.indigo.opacity(0.4)], startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
-        )
+        .navigationTitle("Quiz")
+        .background(Color(.systemBackground))
     }
-} 
+}
+

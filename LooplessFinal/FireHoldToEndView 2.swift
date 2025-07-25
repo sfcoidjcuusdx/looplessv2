@@ -23,23 +23,19 @@ struct FireHoldToEndView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color.red.opacity(0.9), Color.black],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            Color(.systemBackground)
+                .ignoresSafeArea()
 
             VStack(spacing: 32) {
                 VStack(spacing: 12) {
                     Text("Are You Sure?")
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
+                        .font(.title.bold())
+                        .foregroundColor(.primary)
 
                     Text("This session was created to help you grow.\nAre you really ready to stop now?")
                         .multilineTextAlignment(.center)
-                        .font(.system(size: 18, weight: .medium, design: .rounded))
-                        .foregroundColor(.white.opacity(0.85))
+                        .font(.body)
+                        .foregroundColor(.secondary)
                         .padding(.horizontal, 24)
                 }
 
@@ -64,18 +60,18 @@ struct FireHoldToEndView: View {
                         )
 
                     Text("Hold to extinguish the fire")
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
-                        .foregroundColor(.white.opacity(0.8))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.secondary)
 
                     Text("\(Int(max(totalHoldDuration - holdTime, 0)))s remaining")
-                        .font(.system(size: 20, weight: .heavy, design: .rounded))
-                        .foregroundColor(.white)
+                        .font(.title3.weight(.heavy))
+                        .foregroundColor(.primary)
                 }
 
                 VStack(spacing: 12) {
                     Text("Letting go now means giving in to old habits.")
-                        .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundColor(.white.opacity(0.7))
+                        .font(.callout)
+                        .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
 
                     Button(action: {
@@ -83,16 +79,12 @@ struct FireHoldToEndView: View {
                         onCancel()
                     }) {
                         Text("Nevermind, I’ll stay strong")
-                            .font(.system(size: 16, weight: .bold, design: .rounded))
-                            .foregroundColor(.white)
-                            .padding()
+                            .font(.body.weight(.bold))
+                            .foregroundColor(.blue)
                             .frame(maxWidth: .infinity)
-                            .background(Color.white.opacity(0.12))
-                            .cornerRadius(14)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 14)
-                                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                            )
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(12)
                     }
                     .padding(.horizontal, 32)
                 }

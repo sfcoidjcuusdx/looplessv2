@@ -7,10 +7,10 @@ struct SplashView: View {
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Color.white.ignoresSafeArea()
 
             VStack(spacing: 40) {
-                Image("LOGO 2-2")
+                Image("LOGO 1-4")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 220, height: 220)

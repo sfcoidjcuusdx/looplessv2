@@ -56,6 +56,7 @@ class ScheduleViewModel: ObservableObject {
         print("🗓️ Added '\(name)' to \(day) from \(start.hour ?? 0):\(start.minute ?? 0) to \(end.hour ?? 0):\(end.minute ?? 0)")
     }
 
+    
     // MARK: - Delete Blocking Event
     func removeBlockingEvent(_ event: BlockingEvent, from day: String) {
         guard var events = blockingSchedule[day] else { return }
@@ -63,6 +64,22 @@ class ScheduleViewModel: ObservableObject {
         blockingSchedule[day] = events
         print("🗑️ Removed '\(event.name)' from \(day)")
     }
+    
+    func removeEvent(named name: String, on start: Date) {
+        let calendar = Calendar.current
+        for day in daysOfWeek {
+            guard var events = blockingSchedule[day] else { continue }
+
+            events.removeAll { event in
+                guard let eventStartDate = calendar.date(from: event.start) else { return false }
+                return event.name == name &&
+                       calendar.isDate(eventStartDate, equalTo: start, toGranularity: .minute)
+            }
+
+            blockingSchedule[day] = events
+        }
+    }
+
 
     func clearAllBlockingEvents() {
         for day in daysOfWeek {

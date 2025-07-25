@@ -12,7 +12,7 @@ import _DeviceActivity_SwiftUI
 struct MetricSummary: Codable, Hashable {
     let momentumIndex: Double      // Trend of screen time within this week
     let usageStability: Double     // Average screen time over last 7 days
-    let impulseControl: Double     // Today's screen time vs. weekly average
+    let impulseControl: Double     // Today's screen time vs. weekly average (positive = good)
 }
 
 extension DeviceActivityReport.Context {
@@ -43,8 +43,9 @@ struct MetricSummaryReport: DeviceActivityReportScene {
         let today = calendar.startOfDay(for: Date())
         let todayValue = dayTotals[today] ?? 0
 
+        // Positive impulseControl = better control (less usage today vs weekly avg)
         let impulseControl = usageStability > 0
-            ? (todayValue - usageStability) / usageStability
+            ? (1 - todayValue / usageStability)
             : 0
 
         // MARK: - New Momentum Index: screen time trend this week (correlation with weekday)

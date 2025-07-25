@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		993837A22E2B4A8200C4D583 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 993837A12E2B4A8200C4D583 /* Lottie */; };
+		9945FD602E2F37160000CE8E /* DeviceActivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9945FD5F2E2F37160000CE8E /* DeviceActivity.framework */; };
+		9945FD682E2F37170000CE8E /* monitoire.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9945FD5E2E2F37160000CE8E /* monitoire.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		994F58152E27163300F68123 /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 99C6BA772E20D09C008F67F8 /* ManagedSettings.framework */; };
 		994F581D2E27163300F68123 /* shieldaction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 994F58142E27163300F68123 /* shieldaction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		99C6BA782E20D09C008F67F8 /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 99C6BA772E20D09C008F67F8 /* ManagedSettings.framework */; };
@@ -17,6 +19,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		9945FD662E2F37170000CE8E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 99A9AE442E1C8870008A0A30 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9945FD5D2E2F37160000CE8E;
+			remoteInfo = monitoire;
+		};
 		994F581B2E27163300F68123 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 99A9AE442E1C8870008A0A30 /* Project object */;
@@ -62,6 +71,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				99C6BA822E20D09C008F67F8 /* shield.appex in Embed Foundation Extensions */,
+				9945FD682E2F37170000CE8E /* monitoire.appex in Embed Foundation Extensions */,
 				994F581D2E27163300F68123 /* shieldaction.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
@@ -81,6 +91,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		9945FD5E2E2F37160000CE8E /* monitoire.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = monitoire.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		9945FD5F2E2F37160000CE8E /* DeviceActivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeviceActivity.framework; path = System/Library/Frameworks/DeviceActivity.framework; sourceTree = SDKROOT; };
 		994F58142E27163300F68123 /* shieldaction.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = shieldaction.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		99A9AE4C2E1C8870008A0A30 /* LooplessFinal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LooplessFinal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		99A9AE5B2E1C8874008A0A30 /* LooplessFinalTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LooplessFinalTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -92,11 +104,28 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		9945FD6C2E2F37170000CE8E /* Exceptions for "monitoire" folder in "monitoire" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 9945FD5D2E2F37160000CE8E /* monitoire */;
+		};
+		9945FD712E2F39790000CE8E /* Exceptions for "LooplessFinal" folder in "monitoire" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				AppTimeLimit.swift,
+				devicemonitor.swift,
+			);
+			target = 9945FD5D2E2F37160000CE8E /* monitoire */;
+		};
 		994F580A2E270A2F00F68123 /* Exceptions for "LooplessFinal" folder in "LooplessFinal" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				devicemonitor.swift,
 				File.swift,
 				File4.swift,
+				MONITORING.swift,
 			);
 			target = 99A9AE4B2E1C8870008A0A30 /* LooplessFinal */;
 		};
@@ -150,13 +179,23 @@
 			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
 			buildPhase = 99A9AE4A2E1C8870008A0A30 /* Resources */;
 			membershipExceptions = (
+				devicemonitor.swift,
 				File.swift,
 				File4.swift,
+				MONITORING.swift,
 			);
 		};
 /* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		9945FD612E2F37170000CE8E /* monitoire */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				9945FD6C2E2F37170000CE8E /* Exceptions for "monitoire" folder in "monitoire" target */,
+			);
+			path = monitoire;
+			sourceTree = "<group>";
+		};
 		994F58162E27163300F68123 /* shieldaction */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -171,6 +210,7 @@
 				994F580A2E270A2F00F68123 /* Exceptions for "LooplessFinal" folder in "LooplessFinal" target */,
 				994F580B2E270A2F00F68123 /* Exceptions for "LooplessFinal" folder in "Copy Bundle Resources" phase from "LooplessFinal" target */,
 				994F58282E2716B600F68123 /* Exceptions for "LooplessFinal" folder in "shieldaction" target */,
+				9945FD712E2F39790000CE8E /* Exceptions for "LooplessFinal" folder in "monitoire" target */,
 			);
 			path = LooplessFinal;
 			sourceTree = "<group>";
@@ -208,6 +248,14 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		9945FD5B2E2F37160000CE8E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9945FD602E2F37160000CE8E /* DeviceActivity.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		994F58112E27163300F68123 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -266,6 +314,7 @@
 				99C6BA7B2E20D09C008F67F8 /* shield */,
 				99C6BAE62E20E4E4008F67F8 /* rupertthereporter */,
 				994F58162E27163300F68123 /* shieldaction */,
+				9945FD612E2F37170000CE8E /* monitoire */,
 				99C6BA762E20D09C008F67F8 /* Frameworks */,
 				99A9AE4D2E1C8870008A0A30 /* Products */,
 			);
@@ -280,6 +329,7 @@
 				99C6BA752E20D09C008F67F8 /* shield.appex */,
 				99C6BAE52E20E4E4008F67F8 /* rupertthereporter.appex */,
 				994F58142E27163300F68123 /* shieldaction.appex */,
+				9945FD5E2E2F37160000CE8E /* monitoire.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -289,6 +339,7 @@
 			children = (
 				99C6BA772E20D09C008F67F8 /* ManagedSettings.framework */,
 				99C6BA792E20D09C008F67F8 /* ManagedSettingsUI.framework */,
+				9945FD5F2E2F37160000CE8E /* DeviceActivity.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -296,6 +347,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		9945FD5D2E2F37160000CE8E /* monitoire */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9945FD692E2F37170000CE8E /* Build configuration list for PBXNativeTarget "monitoire" */;
+			buildPhases = (
+				9945FD5A2E2F37160000CE8E /* Sources */,
+				9945FD5B2E2F37160000CE8E /* Frameworks */,
+				9945FD5C2E2F37160000CE8E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				9945FD612E2F37170000CE8E /* monitoire */,
+			);
+			name = monitoire;
+			packageProductDependencies = (
+			);
+			productName = monitoire;
+			productReference = 9945FD5E2E2F37160000CE8E /* monitoire.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		994F58132E27163300F68123 /* shieldaction */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 994F581E2E27163300F68123 /* Build configuration list for PBXNativeTarget "shieldaction" */;
@@ -334,6 +407,7 @@
 				99C6BA812E20D09C008F67F8 /* PBXTargetDependency */,
 				99C6BAF02E20E4E4008F67F8 /* PBXTargetDependency */,
 				994F581C2E27163300F68123 /* PBXTargetDependency */,
+				9945FD672E2F37170000CE8E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				99A9AE4E2E1C8870008A0A30 /* LooplessFinal */,
@@ -446,6 +520,9 @@
 				LastSwiftUpdateCheck = 1630;
 				LastUpgradeCheck = 1630;
 				TargetAttributes = {
+					9945FD5D2E2F37160000CE8E = {
+						CreatedOnToolsVersion = 16.3;
+					};
 					994F58132E27163300F68123 = {
 						CreatedOnToolsVersion = 16.3;
 					};
@@ -491,11 +568,19 @@
 				99C6BA742E20D09C008F67F8 /* shield */,
 				99C6BAE42E20E4E4008F67F8 /* rupertthereporter */,
 				994F58132E27163300F68123 /* shieldaction */,
+				9945FD5D2E2F37160000CE8E /* monitoire */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		9945FD5C2E2F37160000CE8E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		994F58122E27163300F68123 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -541,6 +626,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		9945FD5A2E2F37160000CE8E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		994F58102E27163300F68123 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -586,6 +678,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		9945FD672E2F37170000CE8E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9945FD5D2E2F37160000CE8E /* monitoire */;
+			targetProxy = 9945FD662E2F37170000CE8E /* PBXContainerItemProxy */;
+		};
 		994F581C2E27163300F68123 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 994F58132E27163300F68123 /* shieldaction */;
@@ -614,6 +711,58 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		9945FD6A2E2F37170000CE8E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = monitoire/monitoireDebug.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 56H6YY29BC;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = monitoire/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = monitoire;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = crew.LooplessFinal.monitoire;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		9945FD6B2E2F37170000CE8E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = monitoire/monitoire.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 56H6YY29BC;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = monitoire/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = monitoire;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = crew.LooplessFinal.monitoire;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		994F581F2E27163300F68123 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -798,10 +947,9 @@
 				DEVELOPMENT_TEAM = 56H6YY29BC;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses your camera to detect exercises for health tracking.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Required for WebView camera access.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "We need your speech for journaling.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -829,10 +977,9 @@
 				DEVELOPMENT_TEAM = 56H6YY29BC;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses your camera to detect exercises for health tracking.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Required for WebView camera access.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "We need your speech for journaling.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -894,6 +1041,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 56H6YY29BC;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need access to your microphone to record speech.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "We need your speech for journaling.";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = crew.LooplessFinalUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -911,6 +1060,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 56H6YY29BC;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need access to your microphone to record speech.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "We need your speech for journaling.";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = crew.LooplessFinalUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1028,6 +1179,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		9945FD692E2F37170000CE8E /* Build configuration list for PBXNativeTarget "monitoire" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9945FD6A2E2F37170000CE8E /* Debug */,
+				9945FD6B2E2F37170000CE8E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		994F581E2E27163300F68123 /* Build configuration list for PBXNativeTarget "shieldaction" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

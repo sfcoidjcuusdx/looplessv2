@@ -17,6 +17,17 @@
 // Tab.swift
 import Foundation
 
-enum AppTab {
+enum AppTab: String, CaseIterable {
     case home, therapy, blocking, rewards, community
+
+    var icon: String {
+        switch self {
+        case .home: return "house.fill"
+        case .therapy: return "brain.head.profile"
+        case .blocking: return "calendar"
+        case .rewards: return "target"
+        case .community: return "person.3.fill"
+        }
+    }
 }
+

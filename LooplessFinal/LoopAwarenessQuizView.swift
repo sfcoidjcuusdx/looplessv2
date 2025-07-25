@@ -1,18 +1,3 @@
-//
-//  LoopAwarenessQuizView.swift
-//  LooplessFinal
-//
-//  Created by rafiq kutty on 7/8/25.
-//
-
-
-//
-//  LoopAwarenessQuizView.swift
-//  loopless
-//
-//  Created by rafiq kutty on 6/28/25.
-//
-
 import SwiftUI
 
 struct LoopAwarenessQuizView: View {
@@ -40,26 +25,21 @@ struct LoopAwarenessQuizView: View {
     ]
 
     var body: some View {
-        ZStack {
-            LinearGradient(colors: [Color.black, Color.indigo], startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
-
-            VStack(spacing: 24) {
-                Text("🌀 Loop Awareness Quiz")
-                    .font(.custom("AvenirNext-Bold", size: 24))
-                    .foregroundStyle(
-                        LinearGradient(colors: [Color.purple, Color.cyan], startPoint: .leading, endPoint: .trailing)
-                    )
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                Text("Loop Awareness Quiz")
+                    .font(.title)
+                    .fontWeight(.semibold)
+                    .padding(.top)
 
                 if showResult {
-                    VStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 12) {
                         Text("Quiz Complete")
                             .font(.title2)
-                            .foregroundColor(.white)
 
                         Text("Your score: \(score)/\(questions.count)")
                             .font(.headline)
-                            .foregroundColor(.cyan)
+                            .foregroundColor(.secondary)
 
                         Button("Retake Quiz") {
                             currentQuestion = 0
@@ -68,17 +48,14 @@ struct LoopAwarenessQuizView: View {
                             selectedIndex = nil
                             showExplanation = false
                         }
-                        .padding()
-                        .background(Color.white)
-                        .foregroundColor(.indigo)
-                        .clipShape(Capsule())
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+                        .padding(.top)
                     }
                 } else {
                     VStack(alignment: .leading, spacing: 16) {
                         Text(questions[currentQuestion].question)
                             .font(.headline)
-                            .foregroundColor(.white)
-                            .multilineTextAlignment(.leading)
 
                         ForEach(0..<questions[currentQuestion].options.count, id: \.self) { i in
                             Button(action: {
@@ -90,33 +67,28 @@ struct LoopAwarenessQuizView: View {
                                     }
                                 }
                             }) {
-                                Text(questions[currentQuestion].options[i])
-                                    .foregroundColor(.white)
-                                    .padding()
-                                    .frame(maxWidth: .infinity)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .fill(
-                                                selectedIndex == i
-                                                    ? (i == questions[currentQuestion].correctIndex ? Color.green.opacity(0.4) : Color.red.opacity(0.4))
-                                                    : Color.white.opacity(0.1)
-                                            )
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 12)
-                                                    .stroke(Color.cyan.opacity(0.3), lineWidth: 1.2)
-                                            )
-                                    )
+                                HStack {
+                                    Text(questions[currentQuestion].options[i])
+                                    Spacer()
+                                    if selectedIndex != nil {
+                                        Image(systemName: i == questions[currentQuestion].correctIndex ? "checkmark.circle.fill" : (i == selectedIndex ? "xmark.circle.fill" : "circle"))
+                                            .foregroundColor(i == questions[currentQuestion].correctIndex ? .green : (i == selectedIndex ? .red : .gray))
+                                    }
+                                }
+                                .padding()
+                                .background(Color(.systemGray6))
+                                .cornerRadius(8)
                             }
-                            .disabled(selectedIndex != nil) // Disable other answers once selected
+                            .disabled(selectedIndex != nil)
                         }
 
                         if showExplanation {
                             Text(questions[currentQuestion].explanation)
-                                .font(.caption)
-                                .foregroundColor(.white.opacity(0.7))
-                                .padding(.top, 8)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .padding(.top)
 
-                            Button("Next") {
+                            Button(currentQuestion + 1 < questions.count ? "Next" : "Finish") {
                                 if currentQuestion + 1 < questions.count {
                                     currentQuestion += 1
                                     showExplanation = false
@@ -125,24 +97,17 @@ struct LoopAwarenessQuizView: View {
                                     showResult = true
                                 }
                             }
+                            .buttonStyle(.bordered)
+                            .controlSize(.large)
                             .padding(.top)
-                            .padding(.horizontal)
-                            .background(Color.cyan)
-                            .foregroundColor(.black)
-                            .clipShape(Capsule())
                         }
                     }
-                    .padding()
                 }
             }
             .padding()
         }
-    }
-}
-
-struct LoopAwarenessQuizView_Previews: PreviewProvider {
-    static var previews: some View {
-        LoopAwarenessQuizView()
+        .navigationTitle("Quiz")
+        .background(Color(.systemBackground))
     }
 }
 

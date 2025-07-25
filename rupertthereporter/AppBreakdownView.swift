@@ -6,16 +6,16 @@ struct AppBreakdownView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            VStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 12) {
                 Text("Usage by Hour")
-                    .font(.custom("AvenirNext-Medium", size: 14))
-                    .foregroundColor(.white)
+                    .font(.headline)
+                    .foregroundColor(.primary)
                     .padding(.horizontal)
 
                 if usageByHour.isEmpty {
                     Text("No usage recorded.")
                         .font(.footnote)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.secondary)
                         .padding(.horizontal)
                 } else {
                     Chart {
@@ -24,48 +24,31 @@ struct AppBreakdownView: View {
                                 x: .value("Hour", entry.hour),
                                 y: .value("Minutes", entry.duration / 60)
                             )
-                            .foregroundStyle(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [Color.cyan, Color(hue: 0.6, saturation: 1.0, brightness: 0.4)]),
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
-                            .cornerRadius(5)
+                            .foregroundStyle(.cyan)
+                            .cornerRadius(4)
                         }
                     }
                     .chartPlotStyle { plotArea in
                         plotArea
-                            .padding(.leading, 12) // Prevents bar/axis overlap
+                            .padding(.leading, 12)
                     }
-
                     .chartXAxis {
                         AxisMarks(values: .stride(by: 2))
                     }
                     .chartYAxis {
                         AxisMarks(position: .leading)
                     }
-                    .frame(height: geometry.size.height * 0.7) // dynamically scale with container
+                    .frame(height: geometry.size.height * 0.7)
                     .padding(.horizontal)
                 }
             }
             .padding()
             .frame(width: geometry.size.width, height: geometry.size.height)
             .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.black, Color.black.opacity(0.85)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.white)
+                    .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(Color.white.opacity(0.08), lineWidth: 0.6)
-            )
-            .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
         }
     }
 }

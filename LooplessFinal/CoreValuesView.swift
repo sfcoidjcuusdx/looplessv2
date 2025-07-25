@@ -1,73 +1,70 @@
-//
-//  CoreValuesView.swift
-//  LooplessFinal
-//
-//  Created by rafiq kutty on 7/8/25.
-//
-
-
-//
-//  CoreValuesView.swift
-//  loopless
-//
-//  Created by rafiq kutty on 6/28/25.
-//
-
-
 import SwiftUI
 
 struct CoreValuesView: View {
     var body: some View {
         ScrollView {
-            VStack(spacing: 20) {
-                Text("Core Values & Future Self")
-                    .font(.largeTitle.weight(.bold))
-                    .multilineTextAlignment(.center)
-                    .padding()
-                    .foregroundStyle(
-                        LinearGradient(colors: [.yellow, .orange], startPoint: .topLeading, endPoint: .bottomTrailing)
-                    )
+            VStack(alignment: .leading, spacing: 24) {
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Core Values & Future Self")
+                        .font(.title2)
+                        .fontWeight(.semibold)
 
-                Text("Clarify your deeper values. Anchor your digital choices in your future self.")
-                    .font(.body)
-                    .foregroundColor(.white.opacity(0.85))
-                    .padding(.horizontal)
-
-                Image(systemName: "star.fill")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 160)
-                    .foregroundColor(.yellow)
-
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("🌱 Identity Anchors")
-                        .font(.headline)
-                    Text("Who do you want to become? Map your identity through actions.")
-                        .font(.subheadline)
-
-                    Text("🧭 Value Clarification")
-                        .font(.headline)
-                    Text("Choose top 3 values: Integrity, Presence, Growth, etc. Write them visibly.")
-                        .font(.subheadline)
-
-                    Text("🚀 Future Self Visualization")
-                        .font(.headline)
-                    Text("Visualize a day in the life of your ideal future self. How do they relate to tech?")
-                        .font(.subheadline)
+                    Text("Clarify your deeper values. Anchor your digital choices in your future self.")
+                        .font(.body)
+                        .foregroundColor(.secondary)
                 }
-                .padding()
-                .background(Color.white.opacity(0.05))
-                .clipShape(RoundedRectangle(cornerRadius: 14))
 
-                NavigationLink("Explore Core Values Quiz", destination: CoreValuesQuizView())
-                    .font(.headline)
-                    .foregroundColor(.black)
-                    .padding()
-                    .background(Color.yellow)
-                    .clipShape(Capsule())
+                HStack {
+                    Spacer()
+                    Image(systemName: "sparkles")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 80, height: 80)
+                        .foregroundColor(.cyan)
+                        .shadow(radius: 3)
+                    Spacer()
+                }
+
+                VStack(alignment: .leading, spacing: 16) {
+                    Group {
+                        Text("Identity Anchors")
+                            .font(.headline)
+                        Text("Who do you want to become? Map your identity through actions.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+
+                    Group {
+                        Text("Value Clarification")
+                            .font(.headline)
+                        Text("Choose top 3 values: Integrity, Presence, Growth, etc. Write them visibly.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+
+                    Group {
+                        Text("Future Self Visualization")
+                            .font(.headline)
+                        Text("Visualize a day in the life of your ideal future self. How do they relate to tech?")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                NavigationLink(destination: CoreValuesQuizView()) {
+                    Label("Explore Core Values Quiz", systemImage: "list.bullet.clipboard")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.cyan)
+                .controlSize(.large)
+                .padding(.top, 10)
             }
             .padding()
         }
-        .background(LinearGradient(colors: [.black, .orange.opacity(0.3)], startPoint: .top, endPoint: .bottom).ignoresSafeArea())
+        .navigationTitle("Your Values")
+        .background(Color(.systemGroupedBackground))
     }
 }
+

@@ -35,51 +35,41 @@ let slides: [Slide] = [
     Slide(title: "Do you turn to these apps out of boredom?",
           key: "boredom", options: ["Frequently", "Occasionally", "Rarely or never"], autoAdvanceDelay: 0.3, isPassive: false),
     Slide(title: "Analyzing your answers to build a custom screen-time plan...",
-          key: "processing", options: [], autoAdvanceDelay: 4.0, isPassive: true),
+          key: "processing", options: [], autoAdvanceDelay: 3.0, isPassive: true),
     Slide(title: "You may have a moderate or high dependency on your phone.",
-          key: "result_summary", options: [], autoAdvanceDelay: 5.0, isPassive: true),
+          key: "result_summary", options: [], autoAdvanceDelay: 3.0, isPassive: true),
     Slide(title: "Phone dependency can increase health risks like sleep issues and weight gain.",
-          key: "health_risks", options: [], autoAdvanceDelay: 5.0, isPassive: true),
+          key: "health_risks", options: [], autoAdvanceDelay: 3.0, isPassive: true),
     Slide(title: "Mental effects include difficulty making friends and reduced dopamine levels.",
-          key: "mental_health", options: [], autoAdvanceDelay: 5.0, isPassive: true)
+          key: "mental_health", options: [], autoAdvanceDelay: 3.0, isPassive: true)
 ]
 
-// MARK: - Onboarding View
+// MARK: - OnboardingSurveyView
 
 struct OnboardingSurveyView: View {
     var onFinished: () -> Void
     @State private var currentSlide = 0
     @State private var responses: [String: String] = [:]
-    @State private var fadeIn = false
 
     var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
-
-            VStack(alignment: .leading, spacing: 32) {
-                SlideView(
-                    slide: slides[currentSlide],
-                    response: $responses[slides[currentSlide].key],
-                    onOptionSelected: {
-                        if currentSlide < slides.count - 1 {
-                            currentSlide += 1
-                        } else {
-                            onFinished()
-                        }
+        VStack(alignment: .leading, spacing: 24) {
+            SlideView(
+                slide: slides[currentSlide],
+                response: $responses[slides[currentSlide].key],
+                onOptionSelected: {
+                    if currentSlide < slides.count - 1 {
+                        currentSlide += 1
+                    } else {
+                        onFinished()
                     }
-                )
-            }
-            .padding()
-            .opacity(fadeIn ? 1 : 0)
-            .animation(.easeInOut(duration: 0.8), value: fadeIn)
-            .onAppear {
-                fadeIn = true
-                handlePassiveAdvance()
-            }
-            .onChange(of: currentSlide) { _ in
-                handlePassiveAdvance()
-            }
+                }
+            )
         }
+        .padding()
+        .onAppear { handlePassiveAdvance() }
+        .onChange(of: currentSlide) { _ in handlePassiveAdvance() }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(.systemGroupedBackground))
     }
 
     private func handlePassiveAdvance() {
@@ -105,66 +95,47 @@ struct SlideView: View {
     let onOptionSelected: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 28) {
-            GradientText(slide.title)
-                .font(.title3.bold())
+        VStack(alignment: .leading, spacing: 16) {
+            Text(slide.title)
+                .font(.title3)
+                .foregroundColor(.primary)
                 .multilineTextAlignment(.leading)
-                .fixedSize(horizontal: false, vertical: true)
 
             if !slide.isPassive {
-                VStack(spacing: 16) {
-                    ForEach(slide.options, id: \.self) { option in
-                        Button(action: {
-                            Haptics.shared.tap()
-                            response = option
-                            DispatchQueue.main.asyncAfter(deadline: .now() + slide.autoAdvanceDelay) {
-                                onOptionSelected()
-                            }
-                        }) {
-                            HStack {
-                                Text(option)
-                                    .foregroundColor(.white)
-                                    .font(.body.weight(.medium))
-                                    .padding(.leading, 12)
-
-                                Spacer()
-
-                                if response == option {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(.green)
-                                }
-                            }
-                            .padding()
-                            .background(Color.white.opacity(0.05))
-                            .cornerRadius(12)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(response == option ? Color.green.opacity(0.8) : Color.white.opacity(0.1), lineWidth: 1)
-                            )
+                ForEach(slide.options, id: \.self) { option in
+                    Button(action: {
+                        Haptics.shared.tap()
+                        response = option
+                        DispatchQueue.main.asyncAfter(deadline: .now() + slide.autoAdvanceDelay) {
+                            onOptionSelected()
                         }
-                        .buttonStyle(.plain)
+                    }) {
+                        HStack {
+                            Text(option)
+                                .foregroundColor(.primary)
+
+                            Spacer()
+
+                            if response == option {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.accentColor)
+                            }
+                        }
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color(.systemGroupedBackground))
+                                .shadow(color: Color.black.opacity(0.05), radius: 1, x: 0, y: 1)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color(.separator), lineWidth: 0.5)
+                                )
+                        )
                     }
+                    .buttonStyle(.plain)
                 }
             }
         }
-    }
-}
-
-// MARK: - GradientText
-
-struct GradientText: View {
-    var text: String
-    var body: some View {
-        Text(text)
-            .foregroundStyle(
-                LinearGradient(colors: [Color.cyan.opacity(0.8), Color.white],
-                               startPoint: .topLeading,
-                               endPoint: .bottomTrailing)
-            )
-    }
-
-    init(_ text: String) {
-        self.text = text
     }
 }
 
@@ -178,6 +149,8 @@ class Haptics {
         generator.impactOccurred()
     }
 }
+
+// MARK: - Preview
 
 #Preview {
     OnboardingSurveyView {

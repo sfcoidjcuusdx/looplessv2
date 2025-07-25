@@ -90,6 +90,7 @@ struct LoopMappingExercise: View {
         }
         .navigationTitle("Map Your Loop")
         .navigationBarTitleDisplayMode(.inline)
+        .background(Color(.systemGroupedBackground).ignoresSafeArea())
         .onAppear {
             if !savedTrigger.isEmpty { selectedTrigger = savedTrigger; triggerConfirmed = true }
             if !savedBehavior.isEmpty { selectedBehavior = savedBehavior; behaviorConfirmed = true }
@@ -102,8 +103,8 @@ struct LoopMappingExercise: View {
     func stepView(title: String, pickerItems: [String], selection: Binding<String>, confirmed: Binding<Bool>, onConfirm: @escaping () -> Void) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(title)
-                .font(.custom("Avenir Next", size: 18).weight(.semibold))
-                .foregroundColor(.white)
+                .font(.headline)
+                .foregroundColor(.primary)
 
             Picker("", selection: selection) {
                 ForEach(pickerItems, id: \.self) { item in
@@ -120,21 +121,18 @@ struct LoopMappingExercise: View {
                         onConfirm()
                     }
                 }
-                .font(.custom("Avenir Next", size: 16).weight(.medium))
                 .buttonStyle(.borderedProminent)
-                .tint(.orange)
-                .foregroundColor(.black)
             }
 
             if confirmed.wrappedValue {
-                Text("✅ Selected: \(selection.wrappedValue)")
+                Text("Selected: \(selection.wrappedValue)")
+                    .font(.subheadline)
                     .foregroundColor(.green)
-                    .font(.custom("Avenir Next", size: 14))
             }
         }
         .padding()
-        .background(Color.white.opacity(0.05))
-        .cornerRadius(16)
+        .background(.thinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     // MARK: - Result View
@@ -142,8 +140,8 @@ struct LoopMappingExercise: View {
     var resultView: some View {
         VStack(spacing: 12) {
             Text("Your Loop Pattern")
-                .font(.custom("Avenir Next", size: 18).weight(.bold))
-                .foregroundColor(.white)
+                .font(.title3.bold())
+                .foregroundColor(.primary)
 
             Text("\(selectedTrigger) → \(selectedBehavior) → \(selectedOutcome)")
                 .padding()
@@ -151,18 +149,17 @@ struct LoopMappingExercise: View {
                 .background(Color.orange.opacity(0.15))
                 .cornerRadius(12)
                 .foregroundColor(.orange)
-                .font(.custom("Avenir Next", size: 16))
+                .font(.body)
 
             Button("Save & Finish") {
                 showSuccessPopup = true
             }
             .buttonStyle(.borderedProminent)
             .tint(.green)
-            .foregroundColor(.black)
         }
         .padding()
-        .background(Color.white.opacity(0.05))
-        .cornerRadius(16)
+        .background(.thinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     // MARK: - Success Popup
@@ -174,29 +171,26 @@ struct LoopMappingExercise: View {
                 .foregroundColor(.green)
 
             Text("Great Work!")
-                .font(.custom("Avenir Next", size: 24).weight(.bold))
-                .foregroundColor(.green)
+                .font(.title2.bold())
+                .foregroundColor(.primary)
 
             Text("You've identified your loop:")
-                .font(.custom("Avenir Next", size: 16))
-                .foregroundColor(.green)
+                .font(.body)
 
             Text("\(selectedTrigger) → \(selectedBehavior) → \(selectedOutcome)")
-                .font(.custom("Avenir Next", size: 14))
                 .padding()
                 .background(Color.green.opacity(0.1))
                 .cornerRadius(10)
                 .foregroundColor(.green)
 
             Text("Try these suggestions:")
-                .font(.custom("Avenir Next", size: 16).weight(.semibold))
-                .foregroundColor(.green)
+                .font(.headline)
 
             ScrollView {
                 Text(personalizedSuggestions)
-                    .font(.custom("Avenir Next", size: 14))
-                    .foregroundColor(.green)
+                    .font(.callout)
                     .multilineTextAlignment(.leading)
+                    .foregroundColor(.secondary)
             }
             .frame(maxHeight: 160)
 
@@ -205,12 +199,11 @@ struct LoopMappingExercise: View {
             }
             .buttonStyle(.borderedProminent)
             .tint(.green)
-            .foregroundColor(.black)
         }
         .padding()
         .frame(width: 320)
-        .background(Color.white)
-        .cornerRadius(20)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .shadow(radius: 30)
         .transition(.scale)
     }

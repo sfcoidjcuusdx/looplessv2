@@ -37,7 +37,7 @@ struct BottomNavigationView: View {
         VStack(spacing: 4) {
             Image(systemName: icon)
                 .font(.system(size: 20))
-                .foregroundColor(selectedTab == tab ? .purple : .gray)
+                .foregroundColor(selectedTab == tab ? .cyan : .gray)
 
         }
         .frame(maxWidth: .infinity)

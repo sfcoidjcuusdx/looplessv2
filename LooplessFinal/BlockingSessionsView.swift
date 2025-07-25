@@ -1,10 +1,15 @@
 import SwiftUI
 import FamilyControls
 
+// MARK: - SessionKey
+
 struct SessionKey: Hashable {
     let name: String
-    let dayOfWeek: String
+    let startTime: Date
 }
+
+
+// MARK: - Main View
 
 struct BlockingSessionsView: View {
     @EnvironmentObject var dataModel: LooplessDataModel
@@ -15,211 +20,229 @@ struct BlockingSessionsView: View {
 
     @State private var showFireHoldView = false
     @State private var sessionPendingEarlyEnd: BlockingEvent?
-
     @State private var showCompleted = true
     @State private var showCompletedTogglePopup = false
 
     var body: some View {
-        ZStack {
-            ScrollView {
-                VStack(spacing: 32) {
-                    Text("Sessions")
-                        .font(Font.custom("Avenir Next", size: 36).weight(.semibold))
-                        .tracking(0.5)
-                        .foregroundColor(.clear)
-                        .overlay(
-                            LinearGradient(colors: [Color.blue, Color.cyan], startPoint: .topLeading, endPoint: .bottomTrailing)
-                                .mask(
-                                    Text("Sessions")
-                                        .font(Font.custom("Avenir Next", size: 36).weight(.semibold))
-                                )
+        NavigationStack {
+            List {
+                let now = Date()
+                let calendar = Calendar.current
+                let todayIndex = calendar.component(.weekday, from: now)
+                let weekdaySymbols = calendar.weekdaySymbols
+                
+                let (activeSessions, _) = sessionManager.sessions.partitioned {
+                    let endPlusBuffer = calendar.date(byAdding: .minute, value: 1, to: $0.endTime)!
+                    return $0.startTime <= now && endPlusBuffer > now && !sessionManager.isManuallyEnded(name: $0.name, start: $0.startTime)
+                }
+                
+                let allScheduledEvents: [BlockingEvent] = dataModel.scheduleViewModel.daysOfWeek.flatMap { day in
+                    dataModel.scheduleViewModel.blockingEvents(for: day).map { event in
+                        BlockingEvent(
+                            id: UUID(),
+                            name: event.name,
+                            selectionData: try! PropertyListEncoder().encode(dataModel.selection),
+                            startTime: dateFor(dayOfWeek: day, time: event.start),
+                            endTime: dateFor(dayOfWeek: day, time: event.end),
+                            dayOfWeek: day
                         )
-                        .shadow(color: Color.blue.opacity(0.25), radius: 5, x: 0, y: 3)
-                        .padding(.top, 36)
-
-                    let now = Date()
-                    let calendar = Calendar.current
-                    let todayIndex = calendar.component(.weekday, from: now)
-                    let weekdaySymbols = calendar.weekdaySymbols
-
-                    let (activeSessions, _) = sessionManager.sessions.partitioned {
-                        let endPlusBuffer = calendar.date(byAdding: .minute, value: 1, to: $0.endTime)!
-                        return $0.startTime <= now && endPlusBuffer > now && !sessionManager.isManuallyEnded(name: $0.name, start: $0.startTime)
                     }
+                }
 
-                    let allScheduledEvents: [BlockingEvent] = dataModel.scheduleViewModel.daysOfWeek.flatMap { day in
-                        dataModel.scheduleViewModel.blockingEvents(for: day).map { event in
-                            BlockingEvent(
-                                id: UUID(),
-                                name: event.name,
-                                selectionData: try! PropertyListEncoder().encode(dataModel.selection),
-                                startTime: timeFromComponents(event.start),
-                                endTime: timeFromComponents(event.end),
-                                dayOfWeek: day
-                            )
-                        }
-                    }
+                
+                let upcomingSessions = allScheduledEvents.filter { session in
+                    let sessionDayIndex = weekdaySymbols.firstIndex(of: session.dayOfWeek)! + 1
+                    return sessionDayIndex > todayIndex || (sessionDayIndex == todayIndex && session.startTime > now)
+                }
+                let activeSessionKeys = Set(activeSessions.map { SessionKey(name: $0.name, startTime: $0.startTime) })
+                let completedSessions = allScheduledEvents.filter { session in
+                    let key = SessionKey(name: session.name, startTime: session.startTime)
 
-                    let upcomingSessions = allScheduledEvents.filter { session in
-                        let sessionDayIndex = weekdaySymbols.firstIndex(of: session.dayOfWeek)! + 1
-                        return sessionDayIndex > todayIndex || (sessionDayIndex == todayIndex && session.startTime > now)
-                    }
+                    let hasStarted = session.startTime <= now
+                    let hasEnded = session.endTime < now
 
-                    let activeSessionKeys = Set(activeSessions.map { SessionKey(name: $0.name, dayOfWeek: $0.dayOfWeek) })
-                    let completedSessions = allScheduledEvents.filter { session in
-                        let sessionDayIndex = weekdaySymbols.firstIndex(of: session.dayOfWeek)! + 1
-                        let isTodayAndPastEnd = sessionDayIndex == todayIndex && session.endTime < now
-                        let key = SessionKey(name: session.name, dayOfWeek: session.dayOfWeek)
-                        return isTodayAndPastEnd && !activeSessionKeys.contains(key)
-                    }
+                    return hasStarted && hasEnded && !activeSessionKeys.contains(key)
+                }
 
-                    if !activeSessions.isEmpty {
-                        VStack(alignment: .leading, spacing: 16) {
-                            Text("🟢 Active")
-                                .font(.headline)
-                                .foregroundColor(.cyan)
-                                .padding(.leading)
 
-                            ForEach(activeSessions) { session in
-                                SessionCardView(session: session, evaluator: evaluator) {
-                                    sessionPendingEarlyEnd = session
-                                    showFireHoldView = true
-                                }
+                
+                // MARK: - Active
+                if !activeSessions.isEmpty {
+                    Section(header: Text("Active Sessions")) {
+                        ForEach(activeSessions) { session in
+                            SessionCardView(session: session, evaluator: evaluator) {
+                                sessionPendingEarlyEnd = session
+                                showFireHoldView = true
                             }
                         }
                     }
-
-                    if !upcomingSessions.isEmpty {
-                        VStack(alignment: .leading, spacing: 16) {
-                            Text("🗓 Upcoming")
-                                .font(.headline)
-                                .foregroundColor(.blue)
-                                .padding(.leading)
-
-                            ForEach(upcomingSessions) { session in
+                }
+                
+                // MARK: - Upcoming
+                if !upcomingSessions.isEmpty {
+                    Section(header: Text("Upcoming Sessions")) {
+                        ForEach(upcomingSessions) { session in
+                            SessionCardView(session: session, evaluator: evaluator)
+                        }
+                    }
+                }
+                
+                // MARK: - Completed
+                if !completedSessions.isEmpty {
+                    Section {
+                        Button(action: {
+                            showCompletedTogglePopup = true
+                        }) {
+                            HStack {
+                                Text(showCompleted ? "Hide Completed" : "Show Completed")
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                            }
+                        }
+                        
+                        if showCompleted {
+                            ForEach(completedSessions) { session in
                                 SessionCardView(session: session, evaluator: evaluator)
                             }
                         }
-                    }
-
-                    if !completedSessions.isEmpty {
-                        VStack(alignment: .leading, spacing: 16) {
-                            Button(action: {
-                                showCompletedTogglePopup = true
-                            }) {
-                                HStack {
-                                    Text("✅ Completed")
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                }
-                                .font(.headline)
-                                .foregroundColor(.green)
-                                .padding(.horizontal)
-                            }
-
-                            if showCompleted {
-                                ForEach(completedSessions) { session in
-                                    SessionCardView(session: session, evaluator: evaluator)
-                                }
-                            }
-                        }
-                    }
-
-                    if activeSessions.isEmpty && upcomingSessions.isEmpty && (!showCompleted || completedSessions.isEmpty) {
-                        Text("No active, upcoming, or visible completed sessions.")
-                            .foregroundColor(.gray)
-                            .italic()
-                            .font(.system(size: 16, design: .rounded))
-                            .padding()
+                    } header: {
+                        Text("Completed Sessions")
                     }
                 }
-                .padding(.bottom, 40)
+                
+                if activeSessions.isEmpty && upcomingSessions.isEmpty && (!showCompleted || completedSessions.isEmpty) {
+                    Section {
+                        Text("No active, upcoming, or visible completed sessions.")
+                            .foregroundColor(.secondary)
+                            .italic()
+                    }
+                }
+                
             }
-            .background(
-                LinearGradient(colors: [Color.black, Color.blue.opacity(0.15), Color.black],
-                               startPoint: .topLeading, endPoint: .bottomTrailing)
-                    .ignoresSafeArea()
-            )
-            .blur(radius: showCompletedTogglePopup ? 3 : 0)
-
-            if showReflectionPopup {
-                Color.black.opacity(0.4).ignoresSafeArea()
-
+            .listStyle(.insetGrouped)
+            .navigationTitle("Blocking Sessions")
+            .sheet(isPresented: $showCompletedTogglePopup) {
+                CompletedToggleSheet(showCompleted: $showCompleted)
+            }
+            .fullScreenCover(isPresented: $showFireHoldView) {
+                if let session = sessionPendingEarlyEnd {
+                    FireHoldToEndView {
+                        sessionManager.endSession(session)
+                        dataModel.cancelEvent(named: session.name, on: session.startTime)
+                        showFireHoldView = false
+                        sessionPendingEarlyEnd = nil
+                    } onCancel: {
+                        showFireHoldView = false
+                        sessionPendingEarlyEnd = nil
+                    }
+                }
+            }
+            .fullScreenCover(isPresented: $showReflectionPopup) {
                 ReflectionPopupView {
                     showReflectionPopup = false
                 }
-                .frame(maxWidth: 350)
-                .padding()
-                .transition(.scale)
-                .zIndex(1)
+                .navigationBarHidden(true)
             }
+            .onAppear {
+                
+                    sessionManager.loadTodaySessions(from: dataModel.scheduleViewModel, selection: dataModel.selection)
 
-            if showCompletedTogglePopup {
-                Color.black.opacity(0.6).ignoresSafeArea()
+                    for session in sessionManager.sessions {
+                    }
 
-                VStack(spacing: 20) {
-                    Text("Completed Sessions")
-                        .font(.title2.bold())
-                        .foregroundColor(.white)
-
-                    Text("Would you like to hide completed sessions?")
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(.white.opacity(0.8))
-
-                    HStack(spacing: 20) {
-                        Button("Hide") {
-                            showCompleted = false
-                            showCompletedTogglePopup = false
-                        }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.red.opacity(0.8))
-                        .cornerRadius(10)
-                        .foregroundColor(.white)
-
-                        Button("Keep Showing") {
-                            showCompleted = true
-                            showCompletedTogglePopup = false
-                        }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.green.opacity(0.8))
-                        .cornerRadius(10)
-                        .foregroundColor(.white)
+                    let now = Date()
+                    let activeSessions = sessionManager.sessions.filter {
+                        $0.startTime <= now && $0.endTime >= now
                     }
                 }
-                .padding()
-                .frame(maxWidth: 350)
-                .background(Color.black.opacity(0.9))
-                .cornerRadius(20)
-                .shadow(radius: 10)
-                .transition(.scale)
-                .zIndex(2)
+
             }
         }
-        .fullScreenCover(isPresented: $showFireHoldView) {
-            if let session = sessionPendingEarlyEnd {
-                FireHoldToEndView {
-                    sessionManager.endSession(session)
-                    dataModel.cancelEvent(named: session.name, on: session.startTime)
-                    showFireHoldView = false
-                    sessionPendingEarlyEnd = nil
-                } onCancel: {
-                    showFireHoldView = false
-                    sessionPendingEarlyEnd = nil
+    
+    func debugPrintCurrentState() {
+            let now = Date()
+            let calendar = Calendar.current
+            let formatter = DateFormatter()
+            formatter.dateStyle = .short
+            formatter.timeStyle = .medium
+            
+            print("\n===== DEBUG SESSION STATE =====")
+            print("Current time: \(formatter.string(from: now))")
+            
+            // Print all sessions
+            print("\nAll Sessions:")
+            for session in sessionManager.sessions {
+                print("\(session.name): \(formatter.string(from: session.startTime)) - \(formatter.string(from: session.endTime))")
+            }
+            
+            // Print active sessions
+            let activeSessions = sessionManager.sessions.filter {
+                $0.startTime <= now && $0.endTime >= now
+            }
+            print("\nActive Sessions (\(activeSessions.count)):")
+            activeSessions.forEach { print($0.name) }
+            
+            // Print schedule
+            print("\nSchedule View Model Events:")
+            for day in dataModel.scheduleViewModel.daysOfWeek {
+                let events = dataModel.scheduleViewModel.blockingEvents(for: day)
+                if !events.isEmpty {
+                    print("\(day):")
+                    events.forEach { event in
+                        print("  \(event.name): \(event.start.hour ?? 0):\(event.start.minute ?? 0) - \(event.end.hour ?? 0):\(event.end.minute ?? 0)")
+                    }
                 }
             }
+            print("=============================\n")
         }
-        .onAppear {
-            sessionManager.loadTodaySessions(from: dataModel.scheduleViewModel, selection: dataModel.selection)
-        }
-
     }
-
+    
     private func timeFromComponents(_ components: DateComponents) -> Date {
         Calendar.current.date(from: components) ?? Date()
     }
+
+
+// MARK: - Completed Toggle Sheet
+
+struct CompletedToggleSheet: View {
+    @Binding var showCompleted: Bool
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 20) {
+                Text("Completed Sessions")
+                    .font(.title2)
+                    .padding(.top)
+
+                Text("Would you like to hide completed sessions?")
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+
+                Button("Hide Completed") {
+                    showCompleted = false
+                    dismiss()
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.red)
+
+                Button("Keep Showing") {
+                    showCompleted = true
+                    dismiss()
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.blue)
+
+                Spacer()
+            }
+            .padding()
+            .navigationTitle("Options")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
 }
+
+// MARK: - Session Card View
 
 struct SessionCardView: View {
     let session: BlockingEvent
@@ -229,93 +252,53 @@ struct SessionCardView: View {
     var onRequestEndEarly: (() -> Void)? = nil
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Image(systemName: "lock.circle")
-                    .foregroundColor(.cyan)
-                Text(session.name)
-                    .font(.system(size: 22, weight: .semibold, design: .rounded))
-            }
+        VStack(alignment: .leading, spacing: 8) {
+            Text(session.name)
+                .font(.headline)
 
-            HStack(spacing: 10) {
-                Image(systemName: "calendar")
-                    .foregroundColor(.gray)
-                Text(session.dayOfWeek)
-                    .foregroundColor(.white.opacity(0.8))
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
-            }
+            Text(session.dayOfWeek)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
 
-            HStack(spacing: 10) {
-                Image(systemName: "clock")
-                    .foregroundColor(.gray)
-                Text("\(formattedTime(session.startTime)) - \(formattedTime(session.endTime))")
-                    .foregroundColor(.white)
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
-            }
+            Text("\(formattedTime(session.startTime)) - \(formattedTime(session.endTime))")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
 
             if let selection = session.selection {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Blocked Apps")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .foregroundColor(.cyan)
-
+                VStack(alignment: .leading, spacing: 4) {
                     ForEach(Array(selection.applicationTokens), id: \.self) { token in
                         Label(token)
-                            .font(.system(size: 14, design: .rounded))
-                            .padding(8)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color.cyan.opacity(0.15))
-                            .cornerRadius(12)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.cyan.opacity(0.4), lineWidth: 1)
-                            )
+                            .font(.caption2)
+                            .padding(.vertical, 4)
+                            .padding(.horizontal, 8)
+                            .background(Color.white)
+                            .cornerRadius(6)
+                            .shadow(color: Color.black.opacity(0.08), radius: 1, x: 0, y: 1)
                     }
+
                 }
+                .padding(.top, 4)
             } else {
-                Text("⚠️ Could not decode selection.")
+                Text("Could not decode blocked apps.")
+                    .font(.footnote)
                     .foregroundColor(.red)
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
             }
 
             if session.startTime <= Date() && session.endTime >= Date() {
                 Button(action: {
                     onRequestEndEarly?()
                 }) {
-                    HStack {
-                        Image(systemName: "xmark.circle")
-                        Text("End Session Early")
-                    }
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    .foregroundColor(.red)
-                    .padding(.vertical, 10)
-                    .padding(.horizontal, 16)
-                    .background(Color.white.opacity(0.08))
-                    .cornerRadius(12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.red.opacity(0.3), lineWidth: 1)
-                    )
+                    Label("End Session Early", systemImage: "xmark.circle")
+                        .font(.footnote)
+                        .foregroundColor(.red)
                 }
+                .buttonStyle(.bordered)
+                .tint(.red)
+                .padding(.top, 6)
             }
         }
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(Color.white.opacity(0.03))
-                .background(.ultraThinMaterial)
-                .shadow(color: Color.cyan.opacity(0.2), radius: 10, x: 0, y: 5)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 24)
-                        .stroke(
-                            LinearGradient(colors: [.cyan.opacity(0.4), .blue.opacity(0.3)],
-                                           startPoint: .topLeading,
-                                           endPoint: .bottomTrailing),
-                            lineWidth: 1.2
-                        )
-                )
-        )
-        .padding(.horizontal)
+        .padding(.vertical, 8)
+        .padding(.horizontal, 4)
     }
 
     private func formattedTime(_ date: Date) -> String {
@@ -324,6 +307,27 @@ struct SessionCardView: View {
         return formatter.string(from: date)
     }
 }
+
+func dateFor(dayOfWeek: String, time: DateComponents) -> Date {
+    var components = time
+    let calendar = Calendar.current
+    let weekdaySymbols = calendar.weekdaySymbols
+    let today = Date()
+    let todayWeekdayIndex = calendar.component(.weekday, from: today) - 1
+    let targetIndex = weekdaySymbols.firstIndex(of: dayOfWeek)!
+
+    let dayOffset = (targetIndex - todayWeekdayIndex + 7) % 7
+    let targetDate = calendar.date(byAdding: .day, value: dayOffset, to: today)!
+
+    var dateComponents = calendar.dateComponents([.year, .month, .day], from: targetDate)
+    dateComponents.hour = components.hour
+    dateComponents.minute = components.minute
+
+    return calendar.date(from: dateComponents)!
+}
+
+
+// MARK: - Partition Extension
 
 extension Array {
     func partitioned(by predicate: (Element) -> Bool) -> (matching: [Element], nonMatching: [Element]) {

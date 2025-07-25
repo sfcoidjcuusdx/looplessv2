@@ -10,21 +10,18 @@ struct WeeklyBreakdownView: View {
             let width = geometry.size.width
             let isCompact = height < 250 || width < 200
 
-            // Adaptive font sizes
-            let labelFontSize: CGFloat = isCompact ? 9 : 12
-            let valueFontSize: CGFloat = isCompact ? 10 : 12
+            let labelFont: Font = isCompact ? .caption2 : .caption
+            let valueFont: Font = isCompact ? .caption : .footnote
 
-            VStack(spacing: isCompact ? 4 : 10) {
-                // Static title font size
+            VStack(alignment: .leading, spacing: isCompact ? 4 : 10) {
                 Text("Usage by Day")
-                    .font(.custom("AvenirNext-Medium", size: 14)) // stays fixed
-                    .foregroundColor(.white)
+                    .font(.headline)
                     .padding(.horizontal)
 
                 if usageByDay.isEmpty {
                     Text("No usage recorded.")
                         .font(.footnote)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.secondary)
                         .padding(.horizontal)
                 } else {
                     Chart {
@@ -33,19 +30,11 @@ struct WeeklyBreakdownView: View {
                                 x: .value("Minutes", entry.duration / 60),
                                 y: .value("Day", isCompact ? shortWeekdayName(for: entry.weekday) : weekdayName(for: entry.weekday))
                             )
-                            .foregroundStyle(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [Color.cyan, Color(hue: 0.6, saturation: 1.0, brightness: 0.4)]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .cornerRadius(4)
+                            .foregroundStyle(.cyan)
                             .annotation(position: .trailing) {
                                 Text("\(Int(entry.duration / 60)) min")
-                                    .font(.custom("AvenirNext-Regular", size: valueFontSize))
-                                    .foregroundColor(.white.opacity(0.8))
-                                    .minimumScaleFactor(0.5)
+                                    .font(valueFont)
+                                    .foregroundColor(.primary)
                                     .lineLimit(1)
                             }
                         }
@@ -55,9 +44,8 @@ struct WeeklyBreakdownView: View {
                             AxisValueLabel {
                                 if let day = value.as(String.self) {
                                     Text(day)
-                                        .font(.custom("AvenirNext-Regular", size: labelFontSize))
-                                        .foregroundColor(.white)
-                                        .minimumScaleFactor(0.5)
+                                        .font(labelFont)
+                                        .foregroundColor(.primary)
                                         .lineLimit(1)
                                 }
                             }
@@ -73,20 +61,10 @@ struct WeeklyBreakdownView: View {
             .padding(isCompact ? 8 : 12)
             .frame(width: width, height: height)
             .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.black, Color.black.opacity(0.85)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.white)
+                    .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(Color.white.opacity(0.08), lineWidth: 0.6)
-            )
-            .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
         }
     }
 

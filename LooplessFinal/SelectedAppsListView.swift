@@ -12,40 +12,33 @@ struct SelectedAppsListView: View {
     @EnvironmentObject var dataModel: LooplessDataModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("📱 Selected Apps")
-                .font(.title2.bold())
-                .foregroundColor(.white)
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Selected Apps")
+                .font(.title2)
+                .bold()
 
             if dataModel.selection.applicationTokens.isEmpty {
                 Text("No apps selected.")
-                    .foregroundColor(.gray)
+                    .foregroundColor(.secondary)
                     .italic()
             } else {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 8) {
-                        // Convert Set to Array for ForEach
+                    VStack(spacing: 12) {
                         ForEach(Array(dataModel.selection.applicationTokens), id: \.self) { token in
                             Label(token)
-                                .padding(8)
-                                .background(Color.blue.opacity(0.3))
-                                .cornerRadius(8)
-                                .scaleEffect(1.2) // scale text size a bit
-                                .foregroundColor(.white)
+                                .padding()
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.white)
+                                .cornerRadius(12)
+                                .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
                         }
                     }
+                    .padding(.top, 4)
                 }
             }
         }
         .padding()
-        .background(
-            LinearGradient(
-                colors: [.black, .gray.opacity(0.3)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .cornerRadius(12)
-        )
+        .background(Color(.systemBackground))
     }
 }
 

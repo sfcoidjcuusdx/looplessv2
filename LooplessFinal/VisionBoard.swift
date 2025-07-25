@@ -1,19 +1,3 @@
-//
-//  VisionBoard.swift
-//  LooplessFinal
-//
-//  Created by rafiq kutty on 7/17/25.
-//
-
-
-//
-//  FutureSelfVisionActivity.swift
-//  loopless
-//
-//  Created by Ning Ding on 7/10/25.
-//
-
-import SwiftUICore
 import SwiftUI
 
 struct VisionBoard: Codable, Identifiable {
@@ -34,34 +18,187 @@ struct FutureSelfVisionActivity: View {
     @State private var showVisionBoard = false
     @State private var existingBoard: VisionBoard? = nil
     @State private var isEditing = false
-    @State private var shareImage: UIImage? = nil
-    @State private var showShareSheet = false
 
-    
     let coreValues = [
         "Integrity", "Presence", "Growth", "Connection",
         "Creativity", "Health", "Learning", "Balance"
     ]
-    
-    // Load saved board when view appears
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 24) {
+                    Text("Future Self Vision Board")
+                        .font(.largeTitle.weight(.bold))
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 20)
+
+                    Text("Design your relationship with technology around who you want to become.")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+
+                    if let board = existingBoard, !isEditing {
+                        VStack(alignment: .leading, spacing: 12) {
+                            SectionHead(title: "Your Vision Board", icon: "eye")
+
+                            Text(board.description.prefix(150) + (board.description.count > 150 ? "..." : ""))
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+
+                            HStack {
+                                ForEach(board.values.prefix(3), id: \.self) { value in
+                                    ValuePill(value: value, isSelected: true, onTap: {})
+                                }
+                            }
+
+                            Button("Edit Vision Board") {
+                                loadBoardForEditing()
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .padding(.top)
+                        }
+                        .padding()
+                        .background(Color(.secondarySystemBackground))
+                        .cornerRadius(12)
+                        .padding(.horizontal)
+                    } else {
+                        VStack(spacing: 20) {
+                            // Section 1: Values
+                            VStack(alignment: .leading) {
+                                SectionHead(title: "1. Choose Your Core Values", icon: "leaf")
+                                Text("Select 3–5 values that define your ideal self.")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+
+                                FlexibleGrid(
+                                    items: coreValues,
+                                    selectedItems: $selectedValues,
+                                    maxSelections: 5,
+                                    minSelections: 3
+                                )
+                            }
+                            .padding()
+                            .background(Color(.secondarySystemBackground))
+                            .cornerRadius(12)
+
+                            // Section 2: Future Self
+                            VStack(alignment: .leading) {
+                                SectionHead(title: "2. Describe Your Future Self", icon: "person.fill")
+
+                                TextEditor(text: $futureSelfDescription)
+                                    .frame(height: 160)
+                                    .padding(8)
+                                    .background(Color(.systemGray6))
+                                    .cornerRadius(10)
+
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 8) {
+                                        ForEach([
+                                            "My morning routine...",
+                                            "I handle notifications by...",
+                                            "My ideal work focus...",
+                                            "My device usage...",
+                                            "My connection habits..."
+                                        ], id: \.self) { prompt in
+                                            Button(prompt) {
+                                                if !futureSelfDescription.isEmpty {
+                                                    futureSelfDescription += "\n\n" + prompt
+                                                } else {
+                                                    futureSelfDescription = prompt
+                                                }
+                                            }
+                                            .font(.caption)
+                                            .padding(.horizontal, 12)
+                                            .padding(.vertical, 6)
+                                            .background(Color.accentColor.opacity(0.1))
+                                            .cornerRadius(10)
+                                        }
+                                    }
+                                }
+                                .padding(.top, 6)
+                            }
+                            .padding()
+                            .background(Color(.secondarySystemBackground))
+                            .cornerRadius(12)
+
+                            // Section 3: Habits
+                            VStack(alignment: .leading) {
+                                SectionHead(title: "3. Tech Habit Transformation", icon: "arrow.triangle.2.circlepath")
+
+                                HStack(alignment: .top, spacing: 12) {
+                                    VStack(alignment: .leading) {
+                                        Text("Current Habits").font(.subheadline.bold())
+                                        DynamicTextFieldList(items: $currentTechHabits, placeholder: "Add current habit")
+                                    }
+
+                                    Image(systemName: "arrow.right")
+                                        .padding(.top, 25)
+                                        .foregroundColor(.accentColor)
+
+                                    VStack(alignment: .leading) {
+                                        Text("Ideal Habits").font(.subheadline.bold())
+                                        DynamicTextFieldList(items: $idealTechHabits, placeholder: "Add better alternative")
+                                    }
+                                }
+                            }
+                            .padding()
+                            .background(Color(.secondarySystemBackground))
+                            .cornerRadius(12)
+
+                            // Save Button
+                            if selectedValues.count >= 3 && !futureSelfDescription.isEmpty {
+                                Button(action: saveCurrentBoard) {
+                                    Text(isEditing ? "Update Vision Board" : "Create Vision Board")
+                                        .font(.headline)
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .tint(.orange)
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                }
+                .padding(.bottom)
+            }
+            .navigationTitle("Vision Board")
+            .onAppear {
+                loadSavedBoard()
+                if existingBoard == nil {
+                    isEditing = true
+                }
+            }
+            .sheet(isPresented: $showVisionBoard) {
+                if let board = existingBoard {
+                    VisionBoardView(
+                        values: board.values,
+                        description: board.description,
+                        currentHabits: board.currentHabits,
+                        idealHabits: board.idealHabits
+                    )
+                }
+            }
+            .background(Color(.systemGroupedBackground).ignoresSafeArea())
+        }
+    }
+
+    // MARK: - Logic
     private func loadSavedBoard() {
         if let data = UserDefaults.standard.data(forKey: "savedVisionBoard"),
            let board = try? JSONDecoder().decode(VisionBoard.self, from: data) {
             existingBoard = board
         }
     }
-    
-    
-    
-    // Save board to UserDefaults
+
     private func saveBoard() {
         if let board = existingBoard,
            let data = try? JSONEncoder().encode(board) {
             UserDefaults.standard.set(data, forKey: "savedVisionBoard")
         }
     }
-    
-    // Create or update the board
+
     private func saveCurrentBoard() {
         let board = VisionBoard(
             id: existingBoard?.id ?? UUID(),
@@ -70,13 +207,11 @@ struct FutureSelfVisionActivity: View {
             currentHabits: currentTechHabits,
             idealHabits: idealTechHabits
         )
-        
         existingBoard = board
         saveBoard()
         isEditing = false
     }
-    
-    // Load board for editing
+
     private func loadBoardForEditing() {
         guard let board = existingBoard else { return }
         selectedValues = board.values
@@ -85,269 +220,39 @@ struct FutureSelfVisionActivity: View {
         idealTechHabits = board.idealHabits
         isEditing = true
     }
-    
+}
+
+// MARK: - Reusable Components
+
+struct SectionHead: View {
+    var title: String
+    var icon: String
+
     var body: some View {
-        ScrollView {
-            VStack(spacing: 25) {
-                // Header
-                Text("Future Self Vision Board")
-                    .font(.largeTitle.weight(.bold))
-                    .foregroundStyle(LinearGradient(
-                        colors: [.yellow, .orange],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    ))
-                    .padding(.bottom, 5)
-                
-                Text("Design the relationship with technology that aligns with your highest self")
-                    .font(.body)
-                    .foregroundColor(.white.opacity(0.9))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                
-                // Show existing board or creation form
-                if let board = existingBoard, !isEditing {
-                    VStack(alignment: .leading) {
-                        // Board Preview
-                        VStack(alignment: .leading) {
-                            HStack {
-                                Text("Your Vision Board")
-                                    .font(.title2.weight(.bold))
-                                    .foregroundColor(.white)
-                                Spacer()
-                                
-                                Button(action: {
-                                    showVisionBoard = true
-                                }) {
-                                    Text("View Full")
-                                        .font(.caption.weight(.bold))
-                                        .foregroundColor(.yellow)
-                                }
-                            }
-                            
-                            Text(board.description.prefix(150) + (board.description.count > 150 ? "..." : ""))
-                                .font(.subheadline)
-                                .foregroundColor(.white.opacity(0.8))
-                                .padding(.vertical, 8)
-                            
-                            HStack {
-                                ForEach(board.values.prefix(3), id: \.self) { value in
-                                    Text(value)
-                                        .font(.caption)
-                                        .padding(5)
-                                        .background(Color.yellow.opacity(0.2))
-                                        .cornerRadius(5)
-                                        .foregroundColor(.yellow)
-                                }
-                            }
-                        }
-                        .padding()
-                        .background(Color.white.opacity(0.05))
-                        .cornerRadius(12)
-                        
-                        // Edit Button
-                        Button(action: {
-                            loadBoardForEditing()
-                        }) {
-                            Text("Edit Vision Board")
-                                .font(.headline.weight(.semibold))
-                                .foregroundColor(.white)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(Color.blue.opacity(0.3))
-                                .cornerRadius(15)
-                        }
-                        .padding(.top)
-                    }
-                    .padding()
-                    .background(Color.white.opacity(0.05))
-                    .cornerRadius(15)
-                } else {
-                    // Creation/Editing Form
-                    VStack(spacing: 25) {
-                        // Section 1: Core Values Selection
-                        VStack(alignment: .leading) {
-                            SectionHeader(title: "1. Choose Your Core Values", icon: "leaf")
-                            
-                            Text("Select 3-5 values that define who you want to become")
-                                .font(.subheadline)
-                                .foregroundColor(.white.opacity(0.7))
-                                .padding(.bottom, 10)
-                            
-                            FlexibleGrid(
-                                items: coreValues,
-                                selectedItems: $selectedValues,
-                                maxSelections: 5,
-                                minSelections: 3
-                            )
-                        }
-                        .padding()
-                        .background(Color.white.opacity(0.05))
-                        .cornerRadius(15)
-                        
-                        // Section 2: Future Self Description
-                        VStack(alignment: .leading) {
-                            SectionHeader(title: "2. Describe Your Future Self", icon: "person.fill")
-                            
-                            DisclosureGroup("Need inspiration? Tap for guiding questions") {
-                                VStack(alignment: .leading, spacing: 15) {
-                                    Text("• What does your ideal morning routine look like?")
-                                    Text("• How do you spend your focused work time?")
-                                    Text("• What kind of breaks do you take?")
-                                    Text("• How do you unwind in the evenings?")
-                                    Text("• What's your relationship with your devices?")
-                                    Text("• How do you maintain meaningful connections?")
-                                    Text("• What personal growth activities do you do?")
-                                }
-                                .font(.subheadline)
-                                .foregroundColor(.white.opacity(0.8))
-                                .padding(.top, 10)
-                            }
-                            .accentColor(.yellow)
-                            .padding(.bottom, 10)
-                            
-                            // Text Editor with Placeholder
-                            ZStack(alignment: .topLeading) {
-                                TextEditor(text: $futureSelfDescription)
-                                    .frame(height: 180)
-                                    .padding()
-                                    .background(Color.white.opacity(0.1))
-                                    .cornerRadius(12)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .stroke(Color.yellow.opacity(0.3), lineWidth: 1)
-                                    )
-                                
-                                if futureSelfDescription.isEmpty {
-                                    Text("Describe your future self in detail...")
-                                        .foregroundColor(.gray)
-                                        .padding(.top, 24)
-                                        .padding(.leading, 21)
-                                }
-                            }
-                        }
-                        ScrollView(.horizontal, showsIndicators: false) {
-                                                    HStack(spacing: 10) {
-                                                        ForEach([
-                                                            "My morning routine...",
-                                                            "I handle notifications by...",
-                                                            "My ideal work focus...",
-                                                            "My device usage...",
-                                                            "My connection habits..."
-                                                        ], id: \.self) { prompt in
-                                                            Button(action: {
-                                                                if !futureSelfDescription.isEmpty {
-                                                                    futureSelfDescription += "\n\n" + prompt
-                                                                } else {
-                                                                    futureSelfDescription = prompt
-                                                                }
-                                                            }) {
-                                                                Text(prompt)
-                                                                    .font(.caption)
-                                                                    .padding(8)
-                                                                    .background(Color.yellow.opacity(0.2))
-                                                                    .cornerRadius(8)
-                                                                    .foregroundColor(.yellow)
-                                                            }
-                                                        }
-                                                    }
-                                                    .padding(.vertical, 5)
-                                                }
-                                              
-                                            
-                        .padding()
-                        .background(Color.white.opacity(0.05))
-                        .cornerRadius(15)
-                        
-                        // Section 3: Tech Habit Transformation
-                        VStack(alignment: .leading) {
-                            SectionHeader(title: "3. Tech Habit Transformation", icon: "arrow.triangle.2.circlepath")
-                            
-                            HStack {
-                                VStack {
-                                    Text("Current Habits")
-                                        .font(.headline)
-                                    DynamicTextFieldList(items: $currentTechHabits, placeholder: "Add current habit")
-                                }
-                                
-                                Image(systemName: "arrow.right")
-                                    .foregroundColor(.yellow)
-                                
-                                VStack {
-                                    Text("Ideal Habits")
-                                        .font(.headline)
-                                    DynamicTextFieldList(items: $idealTechHabits, placeholder: "Add better alternative")
-                                }
-                            }
-                        }
-                        .padding()
-                        .background(Color.white.opacity(0.05))
-                        .cornerRadius(15)
-                        
-                        // Save Button
-                        if selectedValues.count >= 3 && !futureSelfDescription.isEmpty {
-                            Button(action: {
-                                saveCurrentBoard()
-                            }) {
-                                Text(isEditing ? "Update Vision Board" : "Create Vision Board")
-                                    .font(.headline.weight(.semibold))
-                                    .foregroundColor(.black)
-                                    .padding()
-                                    .frame(maxWidth: .infinity)
-                                    .background(LinearGradient(
-                                        colors: [.yellow, .orange],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    ))
-                                    .cornerRadius(15)
-                                    .shadow(color: .orange.opacity(0.4), radius: 10, x: 0, y: 4)
-                            }
-                            .padding(.top)
-                        }
-                    }
-                }
-            }
-            .padding()
-        }
-        .background(LinearGradient(
-            colors: [.black, .orange.opacity(0.3)],
-            startPoint: .top,
-            endPoint: .bottom
-        ).ignoresSafeArea())
-        .sheet(isPresented: $showVisionBoard) {
-            if let board = existingBoard {
-                VisionBoardView(
-                    values: board.values,
-                    description: board.description,
-                    currentHabits: board.currentHabits,
-                    idealHabits: board.idealHabits
-                )
-            }
-        }
-        .onAppear {
-            loadSavedBoard()
-            if existingBoard == nil {
-                isEditing = true
-            }
+        HStack {
+            Image(systemName: icon)
+                .foregroundColor(.accentColor)
+            Text(title)
+                .font(.headline)
+            Spacer()
         }
     }
 }
 
+struct ValuePill: View {
+    let value: String
+    let isSelected: Bool
+    let onTap: () -> Void
 
-// MARK: - Components
-
-struct SectionHeader: View {
-    let title: String
-    let icon: String
-    
     var body: some View {
-        HStack {
-            Image(systemName: icon)
-                .foregroundColor(.yellow)
-            Text(title)
-                .font(.title3.weight(.semibold))
-        }
-        .padding(.bottom, 5)
+        Text(value)
+            .font(.subheadline)
+            .padding(.vertical, 6)
+            .padding(.horizontal, 12)
+            .background(isSelected ? Color.accentColor.opacity(0.2) : Color(.systemGray5))
+            .foregroundColor(.primary)
+            .cornerRadius(16)
+            .onTapGesture(perform: onTap)
     }
 }
 
@@ -356,7 +261,7 @@ struct FlexibleGrid: View {
     @Binding var selectedItems: [String]
     let maxSelections: Int
     let minSelections: Int
-    
+
     var body: some View {
         FlowLayout(spacing: 8) {
             ForEach(items, id: \.self) { value in
@@ -376,37 +281,17 @@ struct FlexibleGrid: View {
     }
 }
 
-struct ValuePill: View {
-    let value: String
-    let isSelected: Bool
-    let onTap: () -> Void
-    
-    var body: some View {
-        Text(value)
-            .font(.subheadline.weight(.medium))
-            .padding(.vertical, 8)
-            .padding(.horizontal, 15)
-            .background(isSelected ? Color.yellow : Color.white.opacity(0.1))
-            .foregroundColor(isSelected ? .black : .white)
-            .cornerRadius(20)
-            .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(isSelected ? Color.orange : Color.gray, lineWidth: 1)
-            )
-            .onTapGesture(perform: onTap)
-    }
-}
-
 struct DynamicTextFieldList: View {
     @Binding var items: [String]
     let placeholder: String
     @State private var newItem = ""
-    
+
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 6) {
             ForEach(items.indices, id: \.self) { index in
                 HStack {
                     Text("• \(items[index])")
+                        .font(.body)
                     Spacer()
                     Button {
                         items.remove(at: index)
@@ -416,10 +301,10 @@ struct DynamicTextFieldList: View {
                     }
                 }
                 .padding(8)
-                .background(Color.white.opacity(0.05))
+                .background(Color(.systemGray6))
                 .cornerRadius(8)
             }
-            
+
             HStack {
                 TextField(placeholder, text: $newItem)
                 Button {
@@ -429,15 +314,63 @@ struct DynamicTextFieldList: View {
                     }
                 } label: {
                     Image(systemName: "plus.circle.fill")
-                        .foregroundColor(.yellow)
+                        .foregroundColor(.accentColor)
                 }
             }
             .padding(8)
-            .background(Color.white.opacity(0.1))
+            .background(Color(.systemGray6))
             .cornerRadius(8)
         }
     }
 }
+
+// MARK: - Flow Layout
+
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let sizes = subviews.map { $0.sizeThatFits(.unspecified) }
+
+        var totalHeight: CGFloat = 0
+        var lineWidth: CGFloat = 0
+        var lineHeight: CGFloat = 0
+
+        for size in sizes {
+            if lineWidth + size.width + spacing > proposal.width ?? 0 {
+                totalHeight += lineHeight + spacing
+                lineWidth = 0
+                lineHeight = 0
+            }
+
+            lineWidth += size.width + spacing
+            lineHeight = max(lineHeight, size.height)
+        }
+
+        totalHeight += lineHeight
+        return CGSize(width: proposal.width ?? lineWidth, height: totalHeight)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var point = bounds.origin
+        var lineHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+
+            if point.x + size.width > bounds.maxX {
+                point.x = bounds.origin.x
+                point.y += lineHeight + spacing
+                lineHeight = 0
+            }
+
+            subview.place(at: point, proposal: .unspecified)
+            point.x += size.width + spacing
+            lineHeight = max(lineHeight, size.height)
+        }
+    }
+}
+
 
 // MARK: - Vision Board View
 
@@ -669,54 +602,3 @@ struct VisionBoardView: View {
     }
 }
 
-// MARK: - Flow Layout (for dynamic grids)
-
-struct FlowLayout: Layout {
-    var spacing: CGFloat = 8
-    
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let sizes = subviews.map { $0.sizeThatFits(.unspecified) }
-        
-        var totalHeight: CGFloat = 0
-        var totalWidth: CGFloat = 0
-        
-        var lineWidth: CGFloat = 0
-        var lineHeight: CGFloat = 0
-        
-        for size in sizes {
-            if lineWidth + size.width + spacing > proposal.width ?? 0 {
-                totalHeight += lineHeight + spacing
-                totalWidth = max(totalWidth, lineWidth)
-                lineWidth = 0
-                lineHeight = 0
-            }
-            
-            lineWidth += size.width + spacing
-            lineHeight = max(lineHeight, size.height)
-        }
-        
-        totalHeight += lineHeight
-        totalWidth = max(totalWidth, lineWidth)
-        
-        return CGSize(width: totalWidth, height: totalHeight)
-    }
-    
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        var point = bounds.origin
-        var lineHeight: CGFloat = 0
-        
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            
-            if point.x + size.width > bounds.maxX {
-                point.x = bounds.origin.x
-                point.y += lineHeight + spacing
-                lineHeight = 0
-            }
-            
-            subview.place(at: point, proposal: .unspecified)
-            point.x += size.width + spacing
-            lineHeight = max(lineHeight, size.height)
-        }
-    }
-}

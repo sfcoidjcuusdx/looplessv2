@@ -2,7 +2,6 @@ import SwiftUI
 import UserNotifications
 
 struct ContentView: View {
-    @StateObject private var stopwatch = StopwatchManager()
     @AppStorage("onboardingComplete") private var onboardingComplete = false
     @AppStorage("screenTimeAuthorized") private var screenTimeAuthorized = false
     @AppStorage("notificationAuthorized") private var notificationAuthorized = false
@@ -25,6 +24,7 @@ struct ContentView: View {
                 } else if !screenTimeAuthorized {
                     ScreenTimeAccessView {
                         screenTimeAuthorized = true
+
                     }
                 } else if !notificationAuthorized {
                     NotificationAccessView {

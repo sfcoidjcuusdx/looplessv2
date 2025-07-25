@@ -18,20 +18,20 @@ struct ReflectionPopupView: View {
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Color(.systemBackground).ignoresSafeArea() // native white background
 
             if !showThankYou {
-                VStack(spacing: 28) {
-                    GradientText("Take a moment to reflect")
-                        .font(.title3.bold())
+                VStack(spacing: 24) {
+                    Text("Take a moment to reflect")
+                        .font(.title2.bold())
                         .multilineTextAlignment(.center)
 
                     Text("Why did you open that app?")
                         .font(.body)
-                        .foregroundColor(.white.opacity(0.7))
+                        .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
 
-                    VStack(spacing: 14) {
+                    VStack(spacing: 12) {
                         ForEach(options, id: \.self) { option in
                             Button(action: {
                                 Haptics.shared.tap()
@@ -50,24 +50,22 @@ struct ReflectionPopupView: View {
                             }) {
                                 HStack {
                                     Text(option)
-                                        .foregroundColor(.white)
+                                        .foregroundColor(.primary)
                                         .font(.body.weight(.medium))
-                                        .padding(.leading, 12)
 
                                     Spacer()
 
                                     if selectedReason == option {
                                         Image(systemName: "checkmark.circle.fill")
-                                            .foregroundColor(.green)
+                                            .foregroundColor(.blue)
                                     }
                                 }
                                 .padding()
-                                .background(Color.white.opacity(0.05))
-                                .cornerRadius(12)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(selectedReason == option ? Color.green.opacity(0.8) : Color.white.opacity(0.1), lineWidth: 1)
+                                .background(
+                                    Color.white
                                 )
+                                .cornerRadius(12)
+                                .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
                             }
                             .buttonStyle(.plain)
                         }
@@ -90,12 +88,12 @@ struct ReflectionPopupView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 VStack(spacing: 20) {
-                    GradientText("Thank you")
+                    Text("Thank you")
                         .font(.title2.bold())
                         .padding(.bottom, 12)
 
                     Text("Your response helps us understand your habits.")
-                        .foregroundColor(.white.opacity(0.8))
+                        .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                 }
                 .padding()
@@ -106,6 +104,4 @@ struct ReflectionPopupView: View {
         .animation(.easeInOut(duration: 0.5), value: fadeOut)
     }
 }
-
-
 

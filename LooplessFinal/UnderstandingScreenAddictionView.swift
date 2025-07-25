@@ -1,74 +1,89 @@
-//
-//  UnderstandingScreenAddictionView.swift
-//  LooplessFinal
-//
-//  Created by rafiq kutty on 7/8/25.
-//
-
-
-//
-//  UnderstandingScreenAddictionView.swift
-//  loopless
-//
-//  Created by rafiq kutty on 6/28/25.
-//
-
-
 import SwiftUI
 
 struct UnderstandingScreenAddictionView: View {
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
-                Text("Understanding Screen Addiction")
-                    .font(.largeTitle.weight(.bold))
-                    .multilineTextAlignment(.center)
-                    .padding()
-                    .foregroundStyle(
-                        LinearGradient(colors: [.indigo, .purple], startPoint: .leading, endPoint: .trailing)
+            VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Understanding Screen Addiction")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+
+                    Text("Learn how screens hijack your dopamine system, alter attention, and reshape your habits.")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                }
+
+                HStack {
+                    Spacer()
+                    Image(systemName: "bolt.circle.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 80, height: 80)
+                        .foregroundColor(.cyan)
+                        .shadow(radius: 4)
+                    Spacer()
+                }
+
+                VStack(alignment: .leading, spacing: 20) {
+                    SectionView(
+                        title: "Dopamine Loops",
+                        systemImage: "waveform.path.ecg",
+                        description: "Every notification triggers a dopamine spike. Repeated spikes weaken natural motivation and reinforce compulsive checking."
                     )
 
-                Text("Learn how screens hijack your dopamine system, alter attention, and reshape your habits.")
-                    .font(.body)
-                    .foregroundColor(.white.opacity(0.85))
-                    .padding(.horizontal)
+                    Divider()
 
-                Image(systemName: "brain.head.profile")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 180)
-                    .foregroundColor(.purple)
+                    SectionView(
+                        title: "Attention Fragmentation",
+                        systemImage: "eye.trianglebadge.exclamationmark",
+                        description: "Apps are engineered to fragment focus with infinite scroll, autoplay, and stimuli density."
+                    )
 
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("📈 Dopamine Loops")
-                        .font(.headline)
-                    Text("Every notification triggers a dopamine spike. Repeated spikes weaken natural motivation and reinforce compulsive checking.")
-                        .font(.subheadline)
+                    Divider()
 
-                    Text("🧠 Attention Fragmentation")
-                        .font(.headline)
-                    Text("Apps are engineered to fragment focus with infinite scroll, autoplay, and stimuli density.")
-                        .font(.subheadline)
-
-                    Text("⚠️ Digital Dependency")
-                        .font(.headline)
-                    Text("With excessive use, screens replace boredom with stimulation, making the brain avoid discomfort.")
-                        .font(.subheadline)
+                    SectionView(
+                        title: "Digital Dependency",
+                        systemImage: "person.2.slash",
+                        description: "With excessive use, screens replace boredom with stimulation, making the brain avoid discomfort."
+                    )
                 }
-                .padding()
-                .background(Color.white.opacity(0.05))
-                .clipShape(RoundedRectangle(cornerRadius: 16))
 
-                NavigationLink("Start Quiz", destination: ScreenAddictionQuizView())
-                    .font(.headline)
-                    .foregroundColor(.black)
-                    .padding()
-                    .background(Color.indigo)
-                    .clipShape(Capsule())
-                    .padding(.top)
+                NavigationLink(destination: ScreenAddictionQuizView()) {
+                    Label("Start Quiz", systemImage: "list.bullet.rectangle.portrait")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.cyan)
+                .controlSize(.large)
+                .padding(.top, 10)
             }
             .padding()
         }
-        .background(LinearGradient(colors: [Color.black, Color.indigo.opacity(0.4)], startPoint: .top, endPoint: .bottom).ignoresSafeArea())
+        .navigationTitle("Screen Health")
+        .background(Color(.systemGroupedBackground))
     }
 }
+
+struct SectionView: View {
+    let title: String
+    let systemImage: String
+    let description: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: systemImage)
+                .font(.title3)
+                .foregroundColor(.cyan)
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title)
+                    .font(.headline)
+                Text(description)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+}
+
