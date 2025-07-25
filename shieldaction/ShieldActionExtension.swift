@@ -28,7 +28,6 @@ class ShieldActionExtension: ShieldActionDelegate {
         completionHandler(.close)
     }
     
-    /// Sends a local notification and flags app to open with a reflection popup
     private func sendReflectionNotification() {
         let content = UNMutableNotificationContent()
         content.title = "Take a Deep Breath 🌿"
@@ -36,7 +35,6 @@ class ShieldActionExtension: ShieldActionDelegate {
         content.sound = .default
         content.userInfo = ["openReflection": true]
 
-        // ✅ Set shared App Group flag so the main app knows to show the popup
         let defaults = UserDefaults(suiteName: "group.crew.LooplessFinal.sharedData") // ⚠️ Replace with your real App Group ID
         defaults?.set(true, forKey: "launchIntoReflection")
 
