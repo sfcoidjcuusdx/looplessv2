@@ -52,7 +52,7 @@ class LooplessDataModel: ObservableObject {
 
 
     init() {
-        loadAppLimits()                  // ✅ Moved to top
+        loadAppLimits()                 
         loadSavedLabels()
         loadSelection()
         loadTimeLimitSelection()
@@ -65,7 +65,6 @@ class LooplessDataModel: ObservableObject {
     }
 
 
-    // MARK: - Blocking Evaluation Timer
     func startMonitoringLimits() {
         let center = DeviceActivityCenter()
 
@@ -355,7 +354,6 @@ class LooplessDataModel: ObservableObject {
         print("🟢 No active blocking right now")
     }
 
-    // MARK: - Time Comparison
 
     private func isTime(_ current: DateComponents, within start: DateComponents, and end: DateComponents) -> Bool {
         let calendar = Calendar.current
@@ -376,7 +374,6 @@ class LooplessDataModel: ObservableObject {
     }
 
 
-    // MARK: - Cancel Event
 
     func cancelEvent(named name: String, on start: Date) {
         let key = eventKey(name: name, start: start)
@@ -417,7 +414,6 @@ class LooplessDataModel: ObservableObject {
         }
     }
 
-    // MARK: - Manual Scheduled Blocking
 
     func startScheduledBlocking(start: Date, end: Date) {
         if let sessionManager = sessionManager {
@@ -464,7 +460,6 @@ class LooplessDataModel: ObservableObject {
     
    
 
-    // MARK: - Screen Time Authorization
 
     func requestScreenTimeAuthorization() {
         #if targetEnvironment(simulator)
@@ -489,7 +484,6 @@ class LooplessDataModel: ObservableObject {
         #endif
     }
 
-    // MARK: - Selection Persistence
 
     func saveSelection() {
         do {
@@ -544,7 +538,6 @@ class LooplessDataModel: ObservableObject {
         }
     }
 
-    // MARK: - Usage Logging
 
     func logAppUsage(app: String, duration: Int) {
         appUsage[app, default: 0] += duration
